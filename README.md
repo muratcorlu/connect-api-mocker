@@ -1,10 +1,10 @@
 connect-api-mocker
 ==================
-`connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem.It will be helpful when you try to test your application without the actual REST API server.
+`connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
 
 ## Usage
 
-You can use it with [Grunt](http://gruntjs.com). After you install [grunt-contrib-connect](https://github.com/gruntjs/grunt-contrib-connect) add api-mocker middleware to your grunt config.The `mocks/api` folder will be served as REST API at `/api`.
+You can use it with [Grunt](http://gruntjs.com). After you install [grunt-contrib-connect](https://github.com/gruntjs/grunt-contrib-connect) add api-mocker middleware to your grunt config. The `mocks/api` folder will be served as REST API at `/api`.
 
 ```js
 
@@ -45,11 +45,11 @@ module.exports = function(grunt) {
 }
 ```
 
-After you can run your server with `grunt connect` command.You will see `/api` will be mapped to `mocks/api`.
+After you can run your server with `grunt connect` command. You will see `/api` will be mapped to `mocks/api`.
 
 ## Directory Structure
 
-You need to use service names as directory name and http method as filename.Files must be JSON.Middleware will match url to directory structure and respond with the corresponding http method file.
+You need to use service names as directory name and http method as filename. Files must be JSON. Middleware will match url to directory structure and respond with the corresponding http method file.
 
 Example REST service: `GET /api/messages`
 
@@ -97,7 +97,7 @@ _ api
 
 ## Bandwidth simulation
 
-3rd parameter of api-mocker is for bandwidth limit.Metric is kilobit/sec and default value is 0(unlimited).You can use this to test your application in low bandwidth.
+3rd parameter of api-mocker is for bandwidth limit. Metric is kilobit/sec and default value is 0(unlimited). You can use this to test your application in low bandwidth.
 
 Example grunt configuration:
 
