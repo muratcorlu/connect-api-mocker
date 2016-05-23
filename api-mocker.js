@@ -1,5 +1,5 @@
 /*
-* Copyright 2013 Sahibinden Bilgi Teknolojileri Pazarlama ve Ticaret A.Ş.
+* Copyright 2016 Murat Çorlu <muratcorlu@gmail.com>
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
 */
 
 /**
- * Dosya sistemindeki json dosyalarını REST API gibi sunar.
+ * A connect middleware to serve a RESTful api by some json and js files
  *
- * @author sahibinden.com
+ * @author Murat Çorlu <muratcorlu@gmail.com>
  */
 var fs = require('fs');
 
 /**
- * @param {string} urlRoot API'nin sunulacağı adres. örn: /api
- * @param {string} pathRoot API dosyalarının bulundugu klasör yolu. örn: ./mock/api
- * @param {integer} speedLimit Kb cinsinden hız limiti simulasyonu. Varsayılan olarak limitsiz
+ * @param {string} urlRoot Base path for API url eg: /api
+ * @param {string} pathRoot Base path of API mock files. eg: ./mock/api
+ * @param {integer} speedLimit Speed limit simulation by kb/sec metric. default is unlimited
  */
 module.exports = function (urlRoot, pathRoot, speedLimit) {
     // Trim url root address from path root address
@@ -37,28 +37,37 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
     return function(req, res, next){
         if (req.url.indexOf(urlRoot) === 0) {
             // Ignore querystrings
-            var url = req.url.split('?')[0];
+            var url = req.path,
+                filePath = pathRoot + url + '/'+req.method;
 
-            fs.readFile('./' + pathRoot + url + '/'+req.method+'.json', function(err, buf){
-                if (err) return next(err);
+            try {
+                fs.realpath(filePath + '.js', function (err, fullPath) {
+                    var customMiddleware = require(fullPath);
+                    customMiddleware(req, res, next);
+                })
+            } catch (e) {
+                fs.readFile(filePath+'.json', function(err, buf){
+                    if (err) return next(err);
 
-                var resp = {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Content-Length': buf.length
-                    },
-                    body: buf
-                };
-                res.writeHead(200, resp.headers);
+                    var resp = {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Content-Length': buf.length
+                        },
+                        body: buf
+                    };
+                    res.writeHead(200, resp.headers);
 
-                if (speedLimit) {
-                    setTimeout(function() {
+                    if (speedLimit) {
+                        setTimeout(function() {
+                            res.end(resp.body);
+                        }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
+                    } else {
                         res.end(resp.body);
-                    }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
-                } else {
-                    res.end(resp.body);
-                }
-            });
+                    }
+                });
+            }
+
         } else {
             next();
         }
