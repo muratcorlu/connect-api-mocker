@@ -1,0 +1,24 @@
+{
+  "name": "connect-api-mocker",
+  "version": "1.0.0",
+  "description": "A connect middleware to serve a RESTful api by some json and js files",
+  "main": "api-mocker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muratcorlu/connect-api-mocker.git"
+  },
+  "keywords": [
+    "connect",
+    "api",
+    "mock"
+  ],
+  "author": "Murat Çorlu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/muratcorlu/connect-api-mocker/issues"
+  },
+  "homepage": "https://github.com/muratcorlu/connect-api-mocker#readme"
+}

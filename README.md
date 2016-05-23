@@ -2,6 +2,12 @@ connect-api-mocker
 ==================
 `connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
 
+## Installation
+
+```
+npm install connect-api-mocker
+```
+
 ## Usage
 
 You can use it with [Grunt](http://gruntjs.com). After you install [grunt-contrib-connect](https://github.com/gruntjs/grunt-contrib-connect) add api-mocker middleware to your grunt config. The `mocks/api` folder will be served as REST API at `/api`.
@@ -9,7 +15,7 @@ You can use it with [Grunt](http://gruntjs.com). After you install [grunt-contri
 ```js
 
 module.exports = function(grunt) {
-  var apiMocker = require('./lib/middlewares/api-mocker');
+  var apiMocker = require('connect-api-mocker');
 
   grunt.loadNpmTasks('grunt-contrib-connect');  // Connect - Development server
 
