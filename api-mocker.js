@@ -40,33 +40,33 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
             var url = req.path,
                 filePath = pathRoot + url + '/'+req.method;
 
-            try {
-                fs.realpath(filePath + '.js', function (err, fullPath) {
+            fs.realpath(filePath + '.js', function (err, fullPath) {
+                if (!err) {
                     var customMiddleware = require(fullPath);
                     customMiddleware(req, res, next);
-                })
-            } catch (e) {
-                fs.readFile(filePath+'.json', function(err, buf){
-                    if (err) return next(err);
+                } else {
+                    fs.readFile(filePath+'.json', function(err, buf){
+                        if (err) return next(err);
 
-                    var resp = {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Content-Length': buf.length
-                        },
-                        body: buf
-                    };
-                    res.writeHead(200, resp.headers);
+                        var resp = {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Content-Length': buf.length
+                            },
+                            body: buf
+                        };
+                        res.writeHead(200, resp.headers);
 
-                    if (speedLimit) {
-                        setTimeout(function() {
+                        if (speedLimit) {
+                            setTimeout(function() {
+                                res.end(resp.body);
+                            }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
+                        } else {
                             res.end(resp.body);
-                        }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
-                    } else {
-                        res.end(resp.body);
-                    }
-                });
-            }
+                        }
+                    });
+                }
+            });
 
         } else {
             next();
