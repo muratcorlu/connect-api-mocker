@@ -10,6 +10,20 @@ npm install connect-api-mocker --save-dev
 
 ## Usage
 
+### Using with [Express](https://expressjs.com)
+
+```js
+var express = require('express');
+var apiMocker = require('connect-api-mocker');
+var app = express();
+
+app.use(apiMocker('/api', 'mocks/api'));
+
+app.listen(8080);
+```
+
+### Using with Grunt
+
 You can use it with [Grunt](http://gruntjs.com). After you install [grunt-contrib-connect](https://github.com/gruntjs/grunt-contrib-connect) add api-mocker middleware to your grunt config. The `mocks/api` folder will be served as REST API at `/api`.
 
 ```js
@@ -52,6 +66,20 @@ module.exports = function(grunt) {
 ```
 
 After you can run your server with `grunt connect` command. You will see `/api` will be mapped to `mocks/api`.
+
+### Using with Webpack
+
+Create a js file like below and run it by `node dev-server.js`. Requests to `api` path will be served as mock json files.
+
+To use api mocker on your Webpack projects, simply add a setup options to your webpack-dev-server options:
+
+```js
+  ...
+  setup: function(app) {
+    app.use(apiMocker('/api', 'mocks/api'));
+  },
+  ...
+```
 
 ## Directory Structure
 
@@ -162,15 +190,47 @@ Example grunt configuration:
 
 ```js
 ...
-          middleware: function(connect, options) {
+  middleware: function(connect, options) {
 
-            var middlewares = [];
+    var middlewares = [];
 
-            // mock/rest directory will be mapped to your fake REST API
-            middlewares.push(apiMocker(
-                '/api',
-                'mocks/api',
-                50          // limit bandwidth to 50 kilobit/second
-            ));
+    // mock/rest directory will be mapped to your fake REST API
+    middlewares.push(apiMocker(
+      '/api',
+      'mocks/api',
+      50          // limit bandwidth to 50 kilobit/second
+    ));
 ...
 ```
+
+## Options style configuration
+
+You can also use object style parameters:
+
+```js
+apiMocker({
+  '/api': {
+    target: 'mocks/api'
+  },
+  '/mobile/api': {
+    target: 'mocks/mobile'
+  }
+});
+```
+
+In that style you can set multiple configurations at once.
+
+## Next on not found option
+
+If you have some other middlewares that handles same url(a real server proxy etc.) you can set `nextOnNotFound` option to `true`. In that case, api mocker doesnt trigger a `404` error and pass request to next middleware. (default is `false`)
+
+```js
+apiMocker({
+  '/api': {
+    target: 'mocks/api',
+    nextOnNotFound: true
+  }
+});
+```
+
+With that option, you can mock only specific urls simply.
