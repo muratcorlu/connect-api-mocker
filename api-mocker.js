@@ -22,54 +22,66 @@
 var fs = require('fs');
 
 /**
- * @param {string} urlRoot Base path for API url eg: /api
+ * @param {string|object} urlRoot Base path for API url or full options object
  * @param {string} pathRoot Base path of API mock files. eg: ./mock/api
  * @param {integer} speedLimit Speed limit simulation by kb/sec metric. default is unlimited
  */
 module.exports = function (urlRoot, pathRoot, speedLimit) {
-    // Trim url root address from path root address
-    pathRoot = pathRoot.replace(urlRoot, '');
+  var config = {};
 
-    // If a speedLimit not set, set unlimited
-    if (!speedLimit) {
-      speedLimit = 0; // Unlimited
+  if (typeof urlRoot == 'string') {
+    config[urlRoot] = {
+      target: pathRoot,
+      speedLimit: speedLimit || 0
     }
-    return function(req, res, next){
-        if (req.url.indexOf(urlRoot) === 0) {
-            // Ignore querystrings
-            var url = req.path,
-                filePath = pathRoot + url + '/'+req.method;
+  } else {
+    config = urlRoot;
+  }
 
-            fs.realpath(filePath + '.js', function (err, fullPath) {
-                if (!err) {
-                    var customMiddleware = require(fullPath);
-                    customMiddleware(req, res, next);
+  return function(req, res, next){
+    for(var urlRoot in config) {
+      var options = config[urlRoot];
+
+      if (req.url.indexOf(urlRoot) === 0) {
+        // Trim url root address from path root address
+        options.target = options.target.replace(urlRoot, '');
+
+        // Ignore querystrings
+        var url = req.path,
+          filePath = options.target + url + '/'+req.method;
+
+        fs.realpath(filePath + '.js', function (err, fullPath) {
+          if (!err) {
+            var customMiddleware = require(fullPath);
+            customMiddleware(req, res, next);
+          } else {
+            fs.realpath(filePath + '.json', function (jsonReadErr, jsonFullPath) {
+              if (jsonReadErr) {
+                if (options.nextOnNotFound) {
+                  return next();
                 } else {
-                    fs.readFile(filePath+'.json', function(err, buf){
-                        if (err) return next(err);
-
-                        var resp = {
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Content-Length': buf.length
-                            },
-                            body: buf
-                        };
-                        res.writeHead(200, resp.headers);
-
-                        if (speedLimit) {
-                            setTimeout(function() {
-                                res.end(resp.body);
-                            }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
-                        } else {
-                            res.end(resp.body);
-                        }
-                    });
+                  return res.status(404).send('Endpoint not found on mock files: ' + url);
                 }
-            });
+              } else {
+                fs.readFile(filePath+'.json', function(err, buf){
+                  if (err) return next(err);
 
-        } else {
-            next();
-        }
-    };
+                  if (speedLimit) {
+                    setTimeout(function() {
+                      res.end(buf);
+                    }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
+                  } else {
+                    res.end(buf);
+                  }
+                });
+              }
+            });
+          }
+        });
+
+      } else {
+        next();
+      }
+    }
+  };
 };
