@@ -150,7 +150,7 @@ module.exports = function (request, response) {
   }
   
   // Respond with targetFileName
-  response.sendFile(targetFileName, {root: __dirname}
+  response.sendFile(targetFileName, {root: __dirname});
 }
 ```
 
