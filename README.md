@@ -127,6 +127,33 @@ module.exports = function (request, response) {
 }
 ```
 
+Another Example: Respond different json files based on a query parameter:
+
+Request to `/users?type=active` will be responded by `mocks/users/GET_active.json`
+Request to `/users` will be responded by `mocks/users/GET.json`
+
+`GET.js` file:
+
+```js
+module.exports = function (request, response) {
+  var targetFileName = 'GET.json';
+  
+  // Check is a type parameter exist
+  if (request.get('type')) {
+    // Generate a new targetfilename with that type parameter
+    targetFileName = 'GET_' + request.get('type') + '.json';
+    
+    // If file does not exist then respond with 404 header
+    if (!fs.accessSync(targetFileName)) {
+      return response.status(404);
+    }
+  }
+  
+  // Respond with targetFileName
+  response.sendFile(targetFileName, {root: __dirname}
+}
+```
+
 ## Bandwidth simulation
 
 3rd parameter of api-mocker is for bandwidth limit. Metric is kilobit/sec and default value is 0(unlimited). You can use this to test your application in low bandwidth.
