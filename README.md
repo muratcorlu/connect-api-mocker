@@ -127,10 +127,10 @@ module.exports = function (request, response) {
 }
 ```
 
-Another Example: Respond different json files based on a query parameter:
+### Another Example: Respond different json files based on a query parameter:
 
-Request to `/users?type=active` will be responded by `mocks/users/GET_active.json`
-Request to `/users` will be responded by `mocks/users/GET.json`
+- Request to `/users?type=active` will be responded by `mocks/users/GET_active.json`
+- Request to `/users` will be responded by `mocks/users/GET.json`
 
 `GET.js` file:
 
