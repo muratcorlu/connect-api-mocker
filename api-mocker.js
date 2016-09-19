@@ -20,6 +20,7 @@
  * @author Murat Çorlu <muratcorlu@gmail.com>
  */
 var fs = require('fs');
+var path = require('path');
 
 /**
  * @param {string|object} urlRoot Base path for API url or full options object
@@ -33,7 +34,7 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
     config[urlRoot] = {
       target: pathRoot,
       speedLimit: speedLimit || 0
-    }
+    };
   } else {
     config = urlRoot;
   }
@@ -42,46 +43,43 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
     for(var urlRoot in config) {
       var options = config[urlRoot];
 
-      if (req.url.indexOf(urlRoot) === 0) {
-        // Trim url root address from path root address
-        options.target = options.target.replace(urlRoot, '');
-
-        // Ignore querystrings
-        var url = req.path,
-          filePath = options.target + url + '/'+req.method;
-
-        fs.realpath(filePath + '.js', function (err, fullPath) {
-          if (!err) {
-            var customMiddleware = require(fullPath);
-            customMiddleware(req, res, next);
-          } else {
-            fs.realpath(filePath + '.json', function (jsonReadErr, jsonFullPath) {
-              if (jsonReadErr) {
-                if (options.nextOnNotFound) {
-                  return next();
-                } else {
-                  return res.status(404).send('Endpoint not found on mock files: ' + url);
-                }
-              } else {
-                fs.readFile(filePath+'.json', function(err, buf){
-                  if (err) return next(err);
-
-                  if (speedLimit) {
-                    setTimeout(function() {
-                      res.end(buf);
-                    }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
-                  } else {
-                    res.end(buf);
-                  }
-                });
-              }
-            });
-          }
-        });
-
-      } else {
-        next();
+      if (req.url.indexOf(urlRoot) !== 0) {
+        return next();
       }
+
+      // Ignore querystrings
+      var url = req.path.replace(urlRoot, ''),
+        filePath = path.resolve(options.target, url, req.method);
+
+      fs.realpath(filePath + '.js', function (err, fullPath) {
+        if (!err) {
+          var customMiddleware = require(fullPath);
+          return customMiddleware(req, res, next);
+        }
+
+        fs.realpath(filePath + '.json', function (jsonReadErr, jsonFullPath) {
+          if (jsonReadErr) {
+            return options.nextOnNotFound ?
+              next() : res.status(404).send('Endpoint not found on mock files: ' + url);
+          }
+
+          fs.readFile(filePath + '.json', function(err, buf){
+            if (err) {
+              return next(err);
+            }
+
+            res.set('Content-Type', 'application/json');
+
+            if (!speedLimit) {
+              return res.end(buf);
+            }
+
+            setTimeout(function() {
+              res.end(buf);
+            }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
+          });
+        });
+      });
     }
   };
 };
