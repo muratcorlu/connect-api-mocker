@@ -69,8 +69,6 @@ After you can run your server with `grunt connect` command. You will see `/api` 
 
 ### Using with Webpack
 
-Create a js file like below and run it by `node dev-server.js`. Requests to `api` path will be served as mock json files.
-
 To use api mocker on your Webpack projects, simply add a setup options to your webpack-dev-server options:
 
 ```js
