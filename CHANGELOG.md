@@ -1,3 +1,9 @@
+## 1.2.2 (2017-03-15)
+
+Improvements:
+
+- Leading and trailing slashes on target path and requested paths are ignored
+
 ## 1.2.1 (2016-10-01)
 
 Improvements:
