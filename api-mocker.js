@@ -22,6 +22,10 @@
 var fs = require('fs');
 var path = require('path');
 
+function trimSlashes(text) {
+  return text.replace(/\/$/, '').replace(/^\//, '');
+}
+
 /**
  * @param {string|object} urlRoot Base path for API url or full options object
  * @param {string} pathRoot Base path of API mock files. eg: ./mock/api
@@ -43,13 +47,24 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
     for(var urlRoot in config) {
       var options = config[urlRoot];
 
-      if (req.url.indexOf(urlRoot) !== 0) {
+      // trim leading slash from urlRoot
+      urlRoot = trimSlashes(urlRoot);
+
+      // if requested url is in our interest
+      if (req.url.indexOf('/' + urlRoot) !== 0) {
         return next();
       }
 
       // Ignore querystrings
-      var url = req.path.replace(urlRoot, ''),
-        filePath = path.resolve(options.target, url, req.method);
+      var url = req.path;
+
+      // trim trailing and leading slashes from url and remove urlRoot
+      url = trimSlashes(url).replace(new RegExp('^' + urlRoot), '');
+
+      // trim trailing and leading slashes from url again
+      url = trimSlashes(url);
+
+      var filePath = path.resolve(options.target, url, req.method);
 
       fs.realpath(filePath + '.js', function (err, fullPath) {
         if (!err) {
