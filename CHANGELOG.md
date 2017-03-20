@@ -1,3 +1,9 @@
+## 1.2.3 (2017-03-15)
+
+Fixes:
+
+- Target path doesn't ignore leading slash
+
 ## 1.2.2 (2017-03-15)
 
 Improvements:
