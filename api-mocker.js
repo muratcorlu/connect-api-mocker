@@ -64,7 +64,7 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
       // trim trailing and leading slashes from url again
       url = trimSlashes(url);
 
-      var filePath = path.resolve(options.target, url, req.method);
+      var filePath = path.resolve(trimSlashes(options.target), url, req.method);
 
       fs.realpath(filePath + '.js', function (err, fullPath) {
         if (!err) {
