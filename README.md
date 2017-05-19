@@ -1,6 +1,9 @@
 connect-api-mocker
 ==================
+
 `connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
+
+It works with a wide range of servers: [connect][], [express][], [browser-sync][], [lite-server][], [webpack-dev-server][].
 
 ## Installation
 
@@ -10,16 +13,71 @@ npm install connect-api-mocker --save-dev
 
 ## Usage
 
-### Using with [Express](https://expressjs.com)
+### Using with [Connect][]
+
+```js
+var http = require('http');
+var connect = require('connect');
+var apiMocker = require('connect-api-mocker');
+
+var app = connect();
+var restMock = apiMocker('/api', 'mocks/api');
+
+app.use(restMock);
+http.createServer(app).listen(8080);
+```
+
+### Using with [Express][]
 
 ```js
 var express = require('express');
 var apiMocker = require('connect-api-mocker');
+
 var app = express();
+var restMock = apiMocker('/api', 'mocks/api');
 
-app.use(apiMocker('/api', 'mocks/api'));
-
+app.use(restMock);
 app.listen(8080);
+```
+
+### Using with [BrowserSync][]
+
+```js
+var browserSync = require('browser-sync').create();
+var apiMocker = require('connect-api-mocker');
+
+var restMock = apiMocker('/api', 'mocks/api');
+
+browserSync.init({
+  server: {
+    baseDir: './',
+    middleware: [
+      restMock,
+    ],
+  },
+  port: 8080,
+});
+```
+
+### Using with [lite-server][]
+
+`bs-config.js` file:
+
+```js
+var apiMocker = require('connect-api-mocker');
+
+var restMock = apiMocker('/api', 'mocks/api');
+
+module.exports = {
+  server: {
+    middleware: {
+      // Start from key `10` in order to NOT overwrite the default 2 middleware provided
+      // by `lite-server` or any future ones that might be added.
+      10: restMock,
+    },
+  },
+  port: 8080,
+};
 ```
 
 ### Using with Grunt
@@ -69,7 +127,7 @@ After you can run your server with `grunt connect` command. You will see `/api` 
 
 ### Using with Webpack
 
-To use api mocker on your Webpack projects, simply add a setup options to your webpack-dev-server options:
+To use api mocker on your [Webpack][] projects, simply add a setup options to your [webpack-dev-server][] options:
 
 ```js
   ...
@@ -163,18 +221,18 @@ module.exports = function (request, response) {
 ```js
 module.exports = function (request, response) {
   var targetFileName = 'GET.json';
-  
+
   // Check is a type parameter exist
   if (request.query.type) {
     // Generate a new targetfilename with that type parameter
     targetFileName = 'GET_' + request.params.type + '.json';
-    
+
     // If file does not exist then respond with 404 header
     if (!fs.accessSync(targetFileName)) {
       return response.status(404);
     }
   }
-  
+
   // Respond with targetFileName
   response.sendFile(targetFileName, {root: __dirname});
 }
@@ -198,6 +256,7 @@ Example grunt configuration:
       'mocks/api',
       50          // limit bandwidth to 50 kilobit/second
     ));
+  }
 ...
 ```
 
@@ -232,3 +291,13 @@ apiMocker({
 ```
 
 With that option, you can mock only specific urls simply.
+
+<!-- Definitions -->
+
+[connect]: https://github.com/senchalabs/connect
+[express]: https://github.com/expressjs/express
+[browsersync]: https://github.com/BrowserSync/browser-sync
+[browser-sync]: https://github.com/BrowserSync/browser-sync
+[lite-server]: https://github.com/johnpapa/lite-server
+[webpack]: https://github.com/webpack/webpack
+[webpack-dev-server]: https://github.com/webpack/webpack-dev-server
