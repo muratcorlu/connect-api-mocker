@@ -21,6 +21,7 @@
  */
 var fs = require('fs');
 var path = require('path');
+var nodeUrl = require('url');
 
 function trimSlashes(text) {
   return text.replace(/\/$/, '').replace(/^\//, '');
@@ -56,7 +57,7 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
       }
 
       // Ignore querystrings
-      var url = req.path;
+      var url = nodeUrl.parse(req.url).pathname;
 
       // trim trailing and leading slashes from url and remove urlRoot
       url = trimSlashes(url).replace(new RegExp('^' + urlRoot), '');
@@ -74,8 +75,12 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
 
         fs.realpath(filePath + '.json', function (jsonReadErr, jsonFullPath) {
           if (jsonReadErr) {
-            return options.nextOnNotFound ?
-              next() : res.status(404).send('Endpoint not found on mock files: ' + url);
+            if (options.nextOnNotFound) {
+              return next();
+            } else {
+              res.writeHead(404, {'Content-Type': 'text/html'});
+              return res.end('Endpoint not found on mock files: ' + url);
+            }
           }
 
           fs.readFile(filePath + '.json', function(err, buf){
@@ -83,7 +88,7 @@ module.exports = function (urlRoot, pathRoot, speedLimit) {
               return next(err);
             }
 
-            res.set('Content-Type', 'application/json');
+            res.setHeader('Content-Type', 'application/json');
 
             if (!speedLimit) {
               return res.end(buf);
