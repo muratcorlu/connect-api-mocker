@@ -1,3 +1,9 @@
+## 1.2.4 (2017-05-21)
+
+Features:
+
+- Added support for lite-server and browser-sync
+
 ## 1.2.3 (2017-03-15)
 
 Fixes:
