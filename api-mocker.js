@@ -1,5 +1,5 @@
 /*
-* Copyright 2016 Murat Çorlu <muratcorlu@gmail.com>
+* Copyright 2016-2017 Murat Çorlu <muratcorlu@gmail.com>
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,79 +27,143 @@ function trimSlashes(text) {
   return text.replace(/\/$/, '').replace(/^\//, '');
 }
 
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
 /**
- * @param {string|object} urlRoot Base path for API url or full options object
- * @param {string} pathRoot Base path of API mock files. eg: ./mock/api
- * @param {integer} speedLimit Speed limit simulation by kb/sec metric. default is unlimited
+ * @param {string|object} urlRoot Base path for API url or full config object
+ * @param {string|object} pathRoot Base path of API mock files. eg: ./mock/api or
+ * config object for urlRoot
  */
-module.exports = function (urlRoot, pathRoot, speedLimit) {
-  var config = {};
-
-  if (typeof urlRoot == 'string') {
-    config[urlRoot] = {
-      target: pathRoot,
-      speedLimit: speedLimit || 0
-    };
-  } else {
-    config = urlRoot;
-  }
-
+module.exports = function (urlRoot, pathRoot) {
   return function(req, res, next){
-    for(var urlRoot in config) {
-      var options = config[urlRoot];
+    var config = {
+      target: ''
+    };
+    var baseUrl;
 
-      // trim leading slash from urlRoot
-      urlRoot = trimSlashes(urlRoot);
+    if (typeof urlRoot == 'string') {
+      if (req.baseUrl && !pathRoot) {
+        config.target = urlRoot;
+        baseUrl = req.baseUrl;
+      } else {
+        if (typeof pathRoot == 'object') {
+          config = pathRoot
+        } else {
+          config.target = pathRoot;
+        }
+      }
+    }
 
-      // if requested url is in our interest
-      if (req.url.indexOf('/' + urlRoot) !== 0) {
+    if (typeof urlRoot == 'object') {
+      if (req.baseUrl) {
+        config = urlRoot;
+        baseUrl = req.baseUrl;
+      } else {
+        console.log('Probably your mock configuration is wrong');
+        return next();
+      }
+    }
+
+    // trim leading slash from baseUrl
+    baseUrl = trimSlashes(baseUrl);
+
+    // if requested url is in our interest
+    if (!req.baseUrl && req.url.indexOf('/' + baseUrl) !== 0) {
+      return next();
+    }
+
+    // Ignore querystrings
+    var url = nodeUrl.parse(req.url).pathname;
+
+    // remove baseUrl
+    url = url.replace(new RegExp('^(\/)?' + escapeRegExp(baseUrl)), '');
+
+    // trim trailing and leading slashes from url again
+    url = trimSlashes(url);
+
+    var targetPath = trimSlashes(config.target) + '/' + url;
+    var targetFullPath = path.resolve(targetPath);
+
+    var returnNotFound =  function () {
+      if (config.nextOnNotFound) {
         return next();
       }
 
-      // Ignore querystrings
-      var url = nodeUrl.parse(req.url).pathname;
+      res.writeHead(404, {'Content-Type': 'text/html'});
+      return res.end('Endpoint not found on mock files: ' + url);
+    };
 
-      // trim trailing and leading slashes from url and remove urlRoot
-      url = trimSlashes(url).replace(new RegExp('^' + urlRoot), '');
+    var returnForPath = function (targetFolder, requestParams) {
+      var filePath = path.resolve(targetFolder, req.method);
 
-      // trim trailing and leading slashes from url again
-      url = trimSlashes(url);
+      if (fs.existsSync(filePath + '.js')) {
+        var customMiddleware = require(filePath + '.js');
+        if (requestParams) {
+          req.params = requestParams;
+        }
+        return customMiddleware(req, res, next);
+      } else {
+        if (fs.existsSync(filePath + '.json')) {
+          var buf = fs.readFileSync(filePath + '.json');
 
-      var filePath = path.resolve(trimSlashes(options.target), url, req.method);
+          res.setHeader('Content-Type', 'application/json');
 
-      fs.realpath(filePath + '.js', function (err, fullPath) {
-        if (!err) {
-          var customMiddleware = require(fullPath);
-          return customMiddleware(req, res, next);
+          return res.end(buf);
+
+        } else {
+          return returnNotFound();
+        }
+      }
+    };
+
+    if (fs.existsSync(targetFullPath)) {
+      return returnForPath(targetFullPath);
+    } else {
+      var requestParams = {};
+
+      var newTarget = targetPath.split('/').reduce(function (currentFolder, nextFolder, index) {
+        if (currentFolder === false) {
+          return '';
+        }
+        // First iteration
+        if (currentFolder === '') {
+          return nextFolder;
         }
 
-        fs.realpath(filePath + '.json', function (jsonReadErr, jsonFullPath) {
-          if (jsonReadErr) {
-            if (options.nextOnNotFound) {
-              return next();
-            } else {
-              res.writeHead(404, {'Content-Type': 'text/html'});
-              return res.end('Endpoint not found on mock files: ' + url);
-            }
+        var pathToCheck = currentFolder + '/' + nextFolder;
+        if (fs.existsSync(pathToCheck)) {
+          return pathToCheck
+        } else {
+          var folders = fs.readdirSync(currentFolder)
+            .filter(function (file) {
+              return fs.lstatSync(path.join(currentFolder, file)).isDirectory()
+            })
+            .filter(function (folder_name) {
+              return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__'
+            })
+            .map(function (wildcardFolder) {
+              return {
+                param: wildcardFolder.slice(2, -2),
+                folder: wildcardFolder
+              };
+            });
+
+          if (folders.length > 0) {
+            requestParams[folders[0].param] = nextFolder;
+            return currentFolder + '/' + folders[0].folder;
+          } else {
+            return false
           }
+        }
+      }, '');
 
-          fs.readFile(filePath + '.json', function(err, buf){
-            if (err) {
-              return next(err);
-            }
-
-            res.setHeader('Content-Type', 'application/json');
-
-            if (!speedLimit) {
-              return res.end(buf);
-            }
-
-            setTimeout(function() {
-              res.end(buf);
-            }, buf.length / (speedLimit * 1024 / 8 ) * 1000);
-          });
-        });
-      });
-    }
+      if (newTarget) {
+        return returnForPath(newTarget, requestParams);
+      } else {
+        return returnNotFound();
+      }
+    };
   };
 };
