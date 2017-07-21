@@ -1,6 +1,8 @@
 connect-api-mocker
 ==================
 
+[![Build Status](https://travis-ci.org/muratcorlu/connect-api-mocker.svg?branch=master)](https://travis-ci.org/muratcorlu/connect-api-mocker)
+
 `connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
 
 It works with a wide range of servers: [connect][], [express][], [browser-sync][], [lite-server][], [webpack-dev-server][].
@@ -225,7 +227,7 @@ module.exports = function (request, response) {
   // Check is a type parameter exist
   if (request.query.type) {
     // Generate a new targetfilename with that type parameter
-    targetFileName = 'GET_' + request.params.type + '.json';
+    targetFileName = 'GET_' + request.query.type + '.json';
 
     // If file does not exist then respond with 404 header
     if (!fs.accessSync(targetFileName)) {
@@ -238,55 +240,42 @@ module.exports = function (request, response) {
 }
 ```
 
-## Bandwidth simulation
+## Wildcards in paths
 
-3rd parameter of api-mocker is for bandwidth limit. Metric is kilobit/sec and default value is 0(unlimited). You can use this to test your application in low bandwidth.
+You can use wildcards for paths to handle multiple urls(like for IDs). If you create a folder structure like `api/users/__user_id__/GET.js`, all requests like `/api/users/321` or `/api/users/1` will be responded by custom middleware that defined in your `GET.js`. Also id part of the path will be passed as a request parameter named as `user_id` to your middleware. So you can write a middleware like that:
 
-Example grunt configuration:
+`api/users/__user_id__/GET.js` file:
 
 ```js
-...
-  middleware: function(connect, options) {
-
-    var middlewares = [];
-
-    // mock/rest directory will be mapped to your fake REST API
-    middlewares.push(apiMocker(
-      '/api',
-      'mocks/api',
-      50          // limit bandwidth to 50 kilobit/second
-    ));
-  }
-...
+module.exports = function (request, response) {
+  response.json({
+    id: request.params.user_id
+  });
+}
 ```
 
-## Options style configuration
+## Defining multiple mock configurations
 
-You can also use object style parameters:
+You can use apiMocker multiple times with your connect middleware server. In example below, we are defining 3 mock server for 3 different root paths:
 
 ```js
-apiMocker({
-  '/api': {
-    target: 'mocks/api'
-  },
-  '/mobile/api': {
-    target: 'mocks/mobile'
-  }
+app.use('/api/v1', apiMocker('target/path'));
+app.use('/user-api', apiMocker({
+  target: 'other/target/path'
+}));
+app.use(apiMocker('/mobile/api', {
+  target: 'mocks/mobile'
 });
 ```
-
-In that style you can set multiple configurations at once.
 
 ## Next on not found option
 
 If you have some other middlewares that handles same url(a real server proxy etc.) you can set `nextOnNotFound` option to `true`. In that case, api mocker doesnt trigger a `404` error and pass request to next middleware. (default is `false`)
 
 ```js
-apiMocker({
-  '/api': {
-    target: 'mocks/api',
-    nextOnNotFound: true
-  }
+apiMocker('/api', {
+  target: 'mocks/api',
+  nextOnNotFound: true
 });
 ```
 
