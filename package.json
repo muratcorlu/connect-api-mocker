@@ -4,7 +4,7 @@
   "description": "A connect middleware to serve a RESTful api by some json and js files",
   "main": "api-mocker.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/test.js"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/muratcorlu/connect-api-mocker/issues"
   },
-  "homepage": "https://github.com/muratcorlu/connect-api-mocker#readme"
+  "homepage": "https://github.com/muratcorlu/connect-api-mocker#readme",
+  "devDependencies": {
+    "express": "^4.15.3",
+    "supertest": "^3.0.0"
+  }
 }
