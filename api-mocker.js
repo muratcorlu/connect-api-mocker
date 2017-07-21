@@ -48,6 +48,7 @@ module.exports = function (urlRoot, pathRoot) {
         config.target = urlRoot;
         baseUrl = req.baseUrl;
       } else {
+        baseUrl = urlRoot;
         if (typeof pathRoot == 'object') {
           config = pathRoot
         } else {
