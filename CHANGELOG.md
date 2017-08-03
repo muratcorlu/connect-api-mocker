@@ -1,3 +1,9 @@
+## 1.3.1 (2017-08-03)
+
+### Fixes:
+
+- Checking for wildcard folders fail when no mocks folder exits
+
 ## 1.3 (2017-07-24)
 
 ### Breaking Changes:
