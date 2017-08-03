@@ -137,6 +137,10 @@ module.exports = function (urlRoot, pathRoot) {
         if (fs.existsSync(pathToCheck)) {
           return pathToCheck
         } else {
+          if (!fs.existsSync(currentFolder)) {
+            return false;
+          }
+
           var folders = fs.readdirSync(currentFolder)
             .filter(function (file) {
               return fs.lstatSync(path.join(currentFolder, file)).isDirectory()
