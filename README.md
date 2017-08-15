@@ -7,6 +7,8 @@ connect-api-mocker
 
 It works with a wide range of servers: [connect][], [express][], [browser-sync][], [lite-server][], [webpack-dev-server][].
 
+Detailed article: https://medium.com/@muratcorlu/mocking-rest-endpoints-in-web-apps-easy-way-d4cd0e9db000
+
 ## Installation
 
 ```

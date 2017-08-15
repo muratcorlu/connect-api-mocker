@@ -16,7 +16,7 @@
     "mock"
   ],
   "author": "Murat Çorlu",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/muratcorlu/connect-api-mocker/issues"
   },
