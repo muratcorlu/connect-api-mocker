@@ -44,7 +44,7 @@ module.exports = function (urlRoot, pathRoot) {
     var baseUrl;
 
     if (typeof urlRoot == 'string') {
-      if (req.baseUrl && !pathRoot) {
+      if (!pathRoot) {
         config.target = urlRoot;
         baseUrl = req.baseUrl;
       } else {
@@ -58,13 +58,8 @@ module.exports = function (urlRoot, pathRoot) {
     }
 
     if (typeof urlRoot == 'object') {
-      if (req.baseUrl) {
-        config = urlRoot;
-        baseUrl = req.baseUrl;
-      } else {
-        console.log('Probably your mock configuration is wrong');
-        return next();
-      }
+      config = urlRoot;
+      baseUrl = req.baseUrl;
     }
 
     // trim leading slash from baseUrl
