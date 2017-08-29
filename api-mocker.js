@@ -101,10 +101,12 @@ module.exports = function (urlRoot, pathRoot) {
         }
         return customMiddleware(req, res, next);
       } else {
-        if (fs.existsSync(filePath + '.json')) {
-          var buf = fs.readFileSync(filePath + '.json');
+        var fileType = req.accepts(['json', 'xml']) || 'json';
 
-          res.setHeader('Content-Type', 'application/json');
+        if (fs.existsSync(filePath + '.' + fileType)) {
+          var buf = fs.readFileSync(filePath + '.' + fileType);
+
+          res.setHeader('Content-Type', 'application/' + fileType);
 
           return res.end(buf);
 
