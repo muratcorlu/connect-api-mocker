@@ -1,3 +1,9 @@
+## 1.3.3 (2017-08-29)
+
+### Features:
+
+- XML Support added with the `type` config parameter
+
 ## 1.3.2 (2017-08-15)
 
 ### Improvements:
