@@ -101,7 +101,11 @@ module.exports = function (urlRoot, pathRoot) {
         }
         return customMiddleware(req, res, next);
       } else {
-        var fileType = req.accepts(['json', 'xml']) || 'json';
+        var fileType = config.type || 'json';
+
+        if (fileType == 'auto') {
+          fileType = req.accepts(['json', 'xml']);
+        };
 
         if (fs.existsSync(filePath + '.' + fileType)) {
           var buf = fs.readFileSync(filePath + '.' + fileType);

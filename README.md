@@ -256,6 +256,28 @@ module.exports = function (request, response) {
 }
 ```
 
+## XML Support
+
+Api Mocker also can handle XML responses. As you can see, for custom responses, it's not an issue. Because you are completely free about responses in custom responses. But for simple mocks, api mocker try to find a json file by default. You can set that behaviour as `type` in api mocker configuration:
+
+```js
+app.use('/user-api', apiMocker({
+  target: 'other/target/path',
+  type: 'xml'
+}));
+```
+
+If you use `xml` as type, api mocker should look for `mocks/users/GET.xml` file for a request to `/users`. Also you can use `auto` for type:
+
+```js
+app.use('/user-api', apiMocker({
+  target: 'other/target/path',
+  type: 'auto'
+}));
+```
+
+In that case, api mocker will look for `Accept` header in the request to determine response format. So, if you make a request with a `Accept: application/json` header, it'll try to send a response with a `json` file. If you make a request with a `Accept: application/xml` header, it'll try to send a response with an `xml` file.
+
 ## Defining multiple mock configurations
 
 You can use apiMocker multiple times with your connect middleware server. In example below, we are defining 3 mock server for 3 different root paths:

@@ -18,6 +18,14 @@ app.use(apiMocker('/v4', {
     target: 'test/mocks'
 }));
 app.use('/notdefined', apiMocker('notdefined'));
+app.use(apiMocker('/xml', {
+  target: 'test/mocks',
+  type: 'xml'
+}));
+app.use(apiMocker('/dyn', {
+  target: 'test/mocks',
+  type: 'auto'
+}));
 
 describe('Simple configuration with baseUrl', function () {
   it('responds for simple GET request', function (done) {
@@ -106,3 +114,36 @@ describe('Wildcard feature', function () {
   });
 });
 
+
+describe('Response type config', function () {
+  it('works properly with xml responses', function (done) {
+    request(app)
+      .get('/xml/users/1')
+      .expect('Content-Type', /xml/)
+      .expect(200, done);
+  });
+
+  it('works properly with auto type (xml)', function (done) {
+    request(app)
+      .get('/dyn/users/1')
+      .set('Accept', 'application/xml')
+      .expect('Content-Type', /xml/)
+      .expect(200, done);
+  });
+
+  it('works properly with auto type (json)', function (done) {
+    request(app)
+      .get('/dyn/users/1')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200, done);
+  });
+
+  it('works properly with auto type (xml not found)', function (done) {
+    request(app)
+      .post('/dyn/users')
+      .set('Accept', 'application/xml')
+      .expect(404, done);
+
+  });
+});
