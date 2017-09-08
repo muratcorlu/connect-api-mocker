@@ -5,7 +5,7 @@ connect-api-mocker
 
 `connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
 
-It works with a wide range of servers: [connect][], [express][], [browser-sync][], [lite-server][], [webpack-dev-server][].
+It works with a wide range of servers: [connect][], [express][], [browser-sync][], [lite-server][], [webpack-dev-server][]. Also it can be used as a command line tool with the help of [cli-api-mocker](https://github.com/muratcorlu/cli-api-mocker).
 
 Detailed article: https://medium.com/@muratcorlu/mocking-rest-endpoints-in-web-apps-easy-way-d4cd0e9db000
 
@@ -140,6 +140,10 @@ To use api mocker on your [Webpack][] projects, simply add a setup options to yo
   },
   ...
 ```
+
+### Using with other languages other than JavaScript
+
+If you have a Python/Ruby/.NET etc. project and want to use that mocking functionality, you can use [cli-api-mocker](https://github.com/muratcorlu/cli-api-mocker) as a wrapper of connect-api-mocker for command line. With the help of cli-api-mocker, if you run `mockit` command, you will have a seperate web server that will handle your mocks as a REST API. Please look for [cli-api-mocker readme](https://github.com/muratcorlu/cli-api-mocker) for details.
 
 ## Directory Structure
 
