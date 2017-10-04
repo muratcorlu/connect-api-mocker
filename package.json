@@ -1,6 +1,6 @@
 {
   "name": "connect-api-mocker",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A connect middleware to serve a RESTful api by some json, xml or js files",
   "main": "api-mocker.js",
   "scripts": {

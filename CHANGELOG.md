@@ -1,3 +1,9 @@
+## 1.3.4 (2017-10-04)
+
+### Features:
+
+- Custom middlewares will not cached anymore. So you don't need to restart your server when you changed your custom middlewares.
+
 ## 1.3.3 (2017-08-29)
 
 ### Features:
