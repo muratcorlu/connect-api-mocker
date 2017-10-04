@@ -1,7 +1,22 @@
 var request = require('supertest');
 var express = require('express');
 var apiMocker = require('../api-mocker');
+var fs = require('fs');
 var app = express();
+
+var deleteFolderRecursive = function(path) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function(file, index){
+      var curPath = path + "/" + file;
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};
 
 app.use('/api', apiMocker('test/mocks'));
 app.use('/v2', apiMocker({
@@ -34,30 +49,52 @@ describe('Simple configuration with baseUrl', function () {
       .expect('Content-Type', /json/)
       .expect(200)
       .expect({
-          method: 'GET'
+        method: 'GET'
       }, done);
   });
 
   it('responds for simple POST request', function (done) {
     request(app)
-    .post('/api/users/1')
-    .expect('Content-Type', /json/)
-    .expect(200)
-    .expect({
+      .post('/api/users/1')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect({
         method: 'POST'
-    }, done);
+      }, done);
   });
 
   it('wildcard mock works properly', function (done) {
     request(app)
-    .get('/api/users/2812391232')
-    .expect('Content-Type', /json/)
-    .expect(200)
-    .expect({
+      .get('/api/users/2812391232')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect({
         id: '2812391232',
         method: 'GET'
-    }, done);;
-  })
+      }, done);
+  });
+
+  it('custom response will not cache', function (done) {
+    fs.mkdirSync('./test/mocks/users/2');
+    fs.writeFileSync('./test/mocks/users/2/GET.js', fs.readFileSync('./test/mocks/users/__user_id__/GET_example1.js'));
+
+    request(app)
+      .post('/api/users/2')
+      .expect({
+        version: 1
+      });
+
+    fs.writeFileSync('./test/mocks/users/2/GET.js', fs.readFileSync('./test/mocks/users/__user_id__/GET_example2.js'));
+
+    request(app)
+      .post('/api/users/2')
+      .expect({
+        version: 2
+      }, function () {
+        done();
+        deleteFolderRecursive('./test/mocks/users/2');
+      });
+  });
 });
 
 describe('nextOnNotFound setting', function () {
@@ -67,7 +104,7 @@ describe('nextOnNotFound setting', function () {
       .expect('Content-Type', /json/)
       .expect(200)
       .expect({
-          method: 'GET'
+        method: 'GET'
       }, done);
   });
 
@@ -77,7 +114,7 @@ describe('nextOnNotFound setting', function () {
       .expect('Content-Type', /json/)
       .expect(200)
       .expect({
-          message: 'Fallback'
+        message: 'Fallback'
       }, done);
   });
 });
@@ -89,7 +126,7 @@ describe('Simple configuration without baseUrl', function () {
       .expect('Content-Type', /json/)
       .expect(200)
       .expect({
-          method: 'GET'
+        method: 'GET'
       }, done);
   });
 });
@@ -101,7 +138,7 @@ describe('Configuration with object and without baseUrl', function () {
       .expect('Content-Type', /json/)
       .expect(200)
       .expect({
-          method: 'GET'
+        method: 'GET'
       }, done);
   });
 });

@@ -95,6 +95,7 @@ module.exports = function (urlRoot, pathRoot) {
       var filePath = path.resolve(targetFolder, req.method);
 
       if (fs.existsSync(filePath + '.js')) {
+        delete require.cache[require.resolve(filePath + '.js')];
         var customMiddleware = require(filePath + '.js');
         if (requestParams) {
           req.params = requestParams;
