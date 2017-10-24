@@ -50,7 +50,7 @@ module.exports = function (urlRoot, pathRoot) {
       } else {
         baseUrl = urlRoot;
         if (typeof pathRoot == 'object') {
-          config = pathRoot
+          config = pathRoot;
         } else {
           config.target = pathRoot;
         }
@@ -145,10 +145,10 @@ module.exports = function (urlRoot, pathRoot) {
 
           var folders = fs.readdirSync(currentFolder)
             .filter(function (file) {
-              return fs.lstatSync(path.join(currentFolder, file)).isDirectory()
+              return fs.lstatSync(path.join(currentFolder, file)).isDirectory();
             })
             .filter(function (folder_name) {
-              return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__'
+              return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
             })
             .map(function (wildcardFolder) {
               return {
@@ -161,7 +161,7 @@ module.exports = function (urlRoot, pathRoot) {
             requestParams[folders[0].param] = nextFolder;
             return currentFolder + '/' + folders[0].folder;
           } else {
-            return false
+            return false;
           }
         }
       }, '');
