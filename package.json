@@ -25,5 +25,8 @@
     "express": "^4.15.3",
     "mocha": "^3.5.0",
     "supertest": "^3.0.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2"
   }
 }

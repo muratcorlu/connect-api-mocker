@@ -22,6 +22,7 @@
 var fs = require('fs');
 var path = require('path');
 var nodeUrl = require('url');
+var bodyParser = require('body-parser');
 
 function trimSlashes(text) {
   return text.replace(/\/$/, '').replace(/^\//, '');
@@ -100,7 +101,10 @@ module.exports = function (urlRoot, pathRoot) {
         if (requestParams) {
           req.params = requestParams;
         }
-        return customMiddleware(req, res, next);
+        bodyParser.json()(req, res, function () {
+          customMiddleware(req, res, next);
+        });
+        return
       } else {
         var fileType = config.type || 'json';
 
