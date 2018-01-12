@@ -1,3 +1,9 @@
+## 1.3.5 (2018-01-12)
+
+### Features:
+
+- Body Parser added as a internal dependency. So if you can read json body from request objects without any hassle.
+
 ## 1.3.4 (2017-10-04)
 
 ### Features:
