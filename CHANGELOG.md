@@ -1,3 +1,9 @@
+## 1.3.5 (2018-02-01)
+
+### Features:
+
+- Verbose mode added. (Thanks to @iakovmarkov)
+
 ## 1.3.5 (2018-01-12)
 
 ### Features:
