@@ -27,6 +27,7 @@
     "supertest": "^3.0.0"
   },
   "dependencies": {
-    "body-parser": "^1.18.2"
+    "body-parser": "^1.18.2",
+    "chalk": "^2.3.0"
   }
 }

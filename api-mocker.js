@@ -23,6 +23,7 @@ var fs = require('fs');
 var path = require('path');
 var nodeUrl = require('url');
 var bodyParser = require('body-parser');
+var chalk = require('chalk');
 
 function trimSlashes(text) {
   return text.replace(/\/$/, '').replace(/^\//, '');
@@ -30,6 +31,23 @@ function trimSlashes(text) {
 
 function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
+
+function defaultLogger(params) {
+  console.log(
+    chalk.bgYellow.black('api-mocker') + ' ' +
+    chalk.green(params.req.method.toUpperCase()) + ' ' + 
+    chalk.blue(params.req.originalUrl) + ' => ' +
+    chalk.cyan(params.filePath + '.' + params.fileType)
+  );
+}
+
+function logger(params) {
+  if (params.config.verbose === true) {
+    defaultLogger(params)
+  } else if (typeof params.config.verbose === 'function') {
+    params.config.verbose(params)
+  }
 }
 
 /**
@@ -96,6 +114,7 @@ module.exports = function (urlRoot, pathRoot) {
       var filePath = path.resolve(targetFolder, req.method);
 
       if (fs.existsSync(filePath + '.js')) {
+        logger({ req: req, filePath: filePath, fileType: 'js', config: config })
         delete require.cache[require.resolve(filePath + '.js')];
         var customMiddleware = require(filePath + '.js');
         if (requestParams) {
@@ -113,6 +132,7 @@ module.exports = function (urlRoot, pathRoot) {
         };
 
         if (fs.existsSync(filePath + '.' + fileType)) {
+          logger({ req: req, filePath: filePath, fileType: fileType, config: config })
           var buf = fs.readFileSync(filePath + '.' + fileType);
 
           res.setHeader('Content-Type', 'application/' + fileType);
