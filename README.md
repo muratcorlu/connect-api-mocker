@@ -309,6 +309,17 @@ apiMocker('/api', {
 
 With that option, you can mock only specific urls simply.
 
+## Logging
+
+If you want to see which requests are being mocked, set the `verbose` option either to `true` or provide your own function.
+
+```js
+apiMocker('/api', {
+  target: 'mocks/api',
+  verbose: ({ req, filePath, fileType }) => console.log(`Mocking endpoint ${req.originalUrl} using ${filePath}.${fileType}.`)
+});
+```
+
 <!-- Definitions -->
 
 [connect]: https://github.com/senchalabs/connect
