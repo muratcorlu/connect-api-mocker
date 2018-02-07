@@ -5,4 +5,4 @@ node_js:
   - "6"
   - "5"
 after_success:
-  - npm run codecov
+  - npm run coverage
