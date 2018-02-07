@@ -25,9 +25,9 @@ var connect = require('connect');
 var apiMocker = require('connect-api-mocker');
 
 var app = connect();
-var restMock = apiMocker('/api', 'mocks/api');
 
-app.use(restMock);
+app.use('/api', apiMocker('mocks/api'));
+
 http.createServer(app).listen(8080);
 ```
 
@@ -38,9 +38,9 @@ var express = require('express');
 var apiMocker = require('connect-api-mocker');
 
 var app = express();
-var restMock = apiMocker('/api', 'mocks/api');
 
-app.use(restMock);
+app.use('/api', apiMocker('mocks/api'));
+
 app.listen(8080);
 ```
 
