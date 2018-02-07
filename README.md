@@ -133,9 +133,11 @@ After you can run your server with `grunt connect` command. You will see `/api` 
 
 To use api mocker on your [Webpack][] projects, simply add a setup options to your [webpack-dev-server][] options:
 
+> [devServer.setup](https://doc.webpack-china.org/configuration/dev-server/#devserver-setup) , This option is deprecated in favor of before and will be removed in v3.0.0.
+
 ```js
   ...
-  setup: function(app) {
+  before: function(app) {
     app.use(apiMocker('/api', 'mocks/api'));
   },
   ...
