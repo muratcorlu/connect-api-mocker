@@ -4,5 +4,4 @@ node_js:
   - "7"
   - "6"
   - "5"
-after_success:
-  - npm run coverage
+after_success: npm run coverage
