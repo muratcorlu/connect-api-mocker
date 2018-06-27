@@ -9,6 +9,8 @@ It works with a wide range of servers: [connect][], [express][], [browser-sync][
 
 Detailed article: [https://medium.com/@muratcorlu/mocking-rest-endpoints-in-web-apps-easy-way-d4cd0e9db000](https://medium.com/@muratcorlu/mocking-rest-endpoints-in-web-apps-easy-way-d4cd0e9db000)
 
+A presentation at AmsterdamJS'18 conference: [https://www.youtube.com/watch?v=yF_8O4l-Ybc](https://www.youtube.com/watch?v=yF_8O4l-Ybc)
+
 ## Installation
 
 ```
