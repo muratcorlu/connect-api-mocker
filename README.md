@@ -223,6 +223,31 @@ module.exports = function (request, response) {
 }
 ```
 
+`POST.js` file for non ExpressJS server:
+
+```js
+var fs = require('fs');
+var path = require('path');
+
+module.exports = function (request, response) {
+  if (!request.get('X-Auth-Key')) {
+    response.statusCode = 403;
+    response.end();
+  } else {
+    var filePath = path.join(__dirname, 'POST.json');    
+    var stat = fs.statSync(filePath);
+    
+    response.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Content-Length': stat.size
+    });
+
+    var readStream = fs.createReadStream(filePath);
+    // We replaced all the event handlers with a simple call to readStream.pipe()
+    readStream.pipe(response);
+  }
+}
+```
 ### Another Example: Respond different json files based on a query parameter:
 
 - Request to `/users?type=active` will be responded by `mocks/users/GET_active.json`
@@ -231,6 +256,9 @@ module.exports = function (request, response) {
 `GET.js` file:
 
 ```js
+const fs = require('fs');
+const path = require('path');
+
 module.exports = function (request, response) {
   var targetFileName = 'GET.json';
 
@@ -238,15 +266,55 @@ module.exports = function (request, response) {
   if (request.query.type) {
     // Generate a new targetfilename with that type parameter
     targetFileName = 'GET_' + request.query.type + '.json';
+  }
+  const filePath = path.join(__dirname, targetFileName);
+  // If file does not exist then respond with 404 header
+  try {
+    fs.accessSync(filePath);
+  }
+  catch (err) {
+    return response.status(404);
+  }
+  // Respond with filePath
+  response.sendFile(filePath);
+}
+```
+`GET.js` file for non ExpressJS server:
+```js
+var url =  require('url');
+var fs = require('fs');
+var path = require('path');
 
-    // If file does not exist then respond with 404 header
-    if (!fs.accessSync(targetFileName)) {
-      return response.status(404);
-    }
+module.exports = function (request, response) {
+  var targetFileName = 'GET.json';
+  var typeQueryParam = url.parse(request.url, true).query.type;
+  // Check is a type parameter exist
+  if (typeQueryParam) {
+    // Generate a new targetfilename with that type parameter
+    targetFileName = 'GET_' + typeQueryParam + '.json';
   }
 
-  // Respond with targetFileName
-  response.sendFile(targetFileName, {root: __dirname});
+  var filePath = path.join(__dirname, targetFileName);
+
+  // If file does not exist then respond with 404 header
+  try {
+    fs.accessSync(filePath);
+  }
+  catch (err) {
+    response.statusCode = 404;
+    response.end();
+    return;
+  }
+
+  var stat = fs.statSync(filePath);
+  response.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Content-Length': stat.size
+  });
+
+  var readStream = fs.createReadStream(filePath);
+  // We replaced all the event handlers with a simple call to readStream.pipe()
+  readStream.pipe(response);
 }
 ```
 
