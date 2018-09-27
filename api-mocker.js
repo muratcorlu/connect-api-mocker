@@ -56,8 +56,8 @@ function logger(params) {
  * @param {string} path Requst path to API mock file.
  */
 function findMatchingPath(path) {
-  let pathParts = path.split('/');
-  let pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
+  var pathParts = path.split('/');
+  var pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
   if (pathOptions.length < 1) {
     return false;
   }
