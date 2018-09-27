@@ -1,3 +1,10 @@
+## 1.4.0 (2018-09-27)
+
+### Features:
+
+- Now you can define mock files for catching all methods once. You can just use names `ANY.json` or `ANY.js`. (Thanks to @daanoz)
+- Matching with nested wildcard improved. [#25](https://github.com/muratcorlu/connect-api-mocker/pull/25)
+
 ## 1.3.5 (2018-02-01)
 
 ### Features:

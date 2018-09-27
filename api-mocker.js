@@ -1,5 +1,5 @@
 /*
-* Copyright 2016-2017 Murat Çorlu <muratcorlu@gmail.com>
+* Copyright 2016-2018 Murat Çorlu <muratcorlu@gmail.com>
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 /**
  * A connect middleware to serve a RESTful api by some json and js files
- *
- * @author Murat Çorlu <muratcorlu@gmail.com>
  */
 var fs = require('fs');
 var path = require('path');
