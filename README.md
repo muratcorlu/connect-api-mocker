@@ -234,9 +234,9 @@ module.exports = function (request, response) {
     response.statusCode = 403;
     response.end();
   } else {
-    var filePath = path.join(__dirname, 'POST.json');    
+    var filePath = path.join(__dirname, 'POST.json');
     var stat = fs.statSync(filePath);
-    
+
     response.writeHead(200, {
         'Content-Type': 'application/json',
         'Content-Length': stat.size
@@ -318,7 +318,7 @@ module.exports = function (request, response) {
 }
 ```
 
-## Wildcards in paths
+## Wildcards in requests
 
 You can use wildcards for paths to handle multiple urls(like for IDs). If you create a folder structure like `api/users/__user_id__/GET.js`, all requests like `/api/users/321` or `/api/users/1` will be responded by custom middleware that defined in your `GET.js`. Also id part of the path will be passed as a request parameter named as `user_id` to your middleware. So you can write a middleware like that:
 
@@ -328,6 +328,19 @@ You can use wildcards for paths to handle multiple urls(like for IDs). If you cr
 module.exports = function (request, response) {
   response.json({
     id: request.params.user_id
+  });
+}
+```
+
+You can also define `ANY.js` or `ANY.json` files that catch all methods.
+
+`api/users/__user_id__/ANY.js` file:
+
+```js
+module.exports = function (request, response) {
+  response.json({
+    id: request.params.user_id,
+    method: request.method
   });
 }
 ```
