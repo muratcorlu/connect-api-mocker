@@ -36,9 +36,9 @@ function escapeRegExp(str) {
 function defaultLogger(params) {
   console.log(
     chalk.bgYellow.black('api-mocker') + ' ' +
-    chalk.green(params.req.method.toUpperCase()) + ' ' + 
+    chalk.green(params.req.method.toUpperCase()) + ' ' +
     chalk.blue(params.req.originalUrl) + ' => ' +
-    chalk.cyan(params.filePath + '.' + params.fileType)
+    chalk.cyan(params.filePath)
   );
 }
 
@@ -48,6 +48,84 @@ function logger(params) {
   } else if (typeof params.config.verbose === 'function') {
     params.config.verbose(params)
   }
+}
+
+
+/**
+ * Locate all possible options to match a file request, select the first one (most relevant)
+ * @param {string} requestPath Requst path to API mock file.
+ * @param {string[]} requestMethodFiles A list of files that match the request
+ */
+function findMatchingPath(requestPath, requestMethodFiles) {
+  var pathParts = requestPath.split('/');
+  var pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
+
+  var result = false;
+  pathOptions.some(function (pathOption) {
+    return requestMethodFiles.some(function (requestMethodFile) {
+      if (fs.existsSync(path.join(pathOption.path, requestMethodFile))) {
+        result = {
+          path: path.resolve(path.join(pathOption.path, requestMethodFile)),
+          params: pathOption.params
+        };
+        return true;
+      }
+    });
+  });
+  return result;
+}
+/**
+ * Recursively loop through path to find all possible path matches including wildcards
+ * @param {string[]} basePath rootPath to traverse down form
+ * @param {string[]} lookupPath section of path to traverse
+ * @param {object[]} existingParams list of params found on the basepath (key, value)
+ */
+function recurseLookup(basePath, lookupPath, existingParams) {
+  var paths = [];
+  var matchingFolders = findMatchingFolderOnLevel(basePath.join('/'), lookupPath[0], existingParams);
+  if (lookupPath.length < 2) { return matchingFolders; }
+  matchingFolders.forEach(function (folder) {
+    paths = paths.concat(recurseLookup(folder.path.split('/'), lookupPath.slice(1), folder.params));
+  });
+  return paths;
+}
+/**
+ * Find possible folder matches for current path
+ * @param {string} parentPath path to current level
+ * @param {string} testPath folder to locate on current level
+ * @param {object[]} existingParams list of params found on the parentPath (key, value)
+ */
+function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
+  var pathOptions = [];
+  if (parentPath === false || !fs.existsSync(parentPath)) {
+    return pathOptions;
+  }
+  if (fs.existsSync(path.join(parentPath, testPath))) {
+    pathOptions.push({
+      path: path.join(parentPath, testPath),
+      params: existingParams.concat([])
+    });
+  }
+  fs.readdirSync(parentPath)
+    .filter(function (file) {
+      return fs.lstatSync(path.join(parentPath, file)).isDirectory();
+    })
+    .filter(function (folder_name) {
+      return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
+    })
+    .map(function (wildcardFolder) {
+      return {
+        param: wildcardFolder.slice(2, -2),
+        folder: wildcardFolder
+      };
+    }).forEach(function (wildcardFolder) {
+      var pathOption = {
+        path: path.join(parentPath, wildcardFolder.folder),
+        params: existingParams.concat({key: wildcardFolder.param, value: testPath})
+      };
+      pathOptions.push(pathOption);
+    });
+  return pathOptions;
 }
 
 /**
@@ -110,13 +188,11 @@ module.exports = function (urlRoot, pathRoot) {
       return res.end('Endpoint not found on mock files: ' + url);
     };
 
-    var returnForPath = function (targetFolder, requestParams) {
-      var filePath = path.resolve(targetFolder, req.method);
-
-      if (fs.existsSync(filePath + '.js')) {
+    var returnForPath = function (filePath, requestParams) {
+      if (filePath.endsWith('.js')) {
         logger({ req: req, filePath: filePath, fileType: 'js', config: config })
-        delete require.cache[require.resolve(filePath + '.js')];
-        var customMiddleware = require(filePath + '.js');
+        delete require.cache[require.resolve(path.resolve(filePath))];
+        var customMiddleware = require(path.resolve(filePath));
         if (requestParams) {
           req.params = requestParams;
         }
@@ -131,67 +207,42 @@ module.exports = function (urlRoot, pathRoot) {
           fileType = req.accepts(['json', 'xml']);
         };
 
-        if (fs.existsSync(filePath + '.' + fileType)) {
-          logger({ req: req, filePath: filePath, fileType: fileType, config: config })
-          var buf = fs.readFileSync(filePath + '.' + fileType);
+        logger({ req: req, filePath: filePath, fileType: fileType, config: config })
+        var buf = fs.readFileSync(filePath);
 
-          res.setHeader('Content-Type', 'application/' + fileType);
+        res.setHeader('Content-Type', 'application/' + fileType);
 
-          return res.end(buf);
-
-        } else {
-          return returnNotFound();
-        }
+        return res.end(buf);
       }
     };
+    var methodFileExtension = config.type || 'json';
+    if (methodFileExtension == 'auto') {
+      methodFileExtension = req.accepts(['json', 'xml']);
+    }
+    var jsMockFile = req.method + '.js';
+    var staticMockFile = req.method + '.' + methodFileExtension;
+    var wildcardJsMockFile = 'ANY.js';
+    var wildcardStaticMockFile = 'ANY.' + methodFileExtension;
 
-    if (fs.existsSync(targetFullPath)) {
-      return returnForPath(targetFullPath);
+    var methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
+
+    var matchedMethodFile = methodFiles.find(function (methodFile) {
+      if (fs.existsSync(path.join(targetFullPath, methodFile))) {
+        return true;
+      }
+      return false;
+    });
+
+    if (matchedMethodFile) {
+      return returnForPath(path.resolve(path.join(targetFullPath, matchedMethodFile)));
     } else {
-      var requestParams = {};
-
-      var newTarget = targetPath.split('/').reduce(function (currentFolder, nextFolder, index) {
-        if (currentFolder === false) {
-          return '';
-        }
-        // First iteration
-        if (currentFolder === '') {
-          return nextFolder;
-        }
-
-        var pathToCheck = currentFolder + '/' + nextFolder;
-        if (fs.existsSync(pathToCheck)) {
-          return pathToCheck
-        } else {
-          if (!fs.existsSync(currentFolder)) {
-            return false;
-          }
-
-          var folders = fs.readdirSync(currentFolder)
-            .filter(function (file) {
-              return fs.lstatSync(path.join(currentFolder, file)).isDirectory();
-            })
-            .filter(function (folder_name) {
-              return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
-            })
-            .map(function (wildcardFolder) {
-              return {
-                param: wildcardFolder.slice(2, -2),
-                folder: wildcardFolder
-              };
-            });
-
-          if (folders.length > 0) {
-            requestParams[folders[0].param] = nextFolder;
-            return currentFolder + '/' + folders[0].folder;
-          } else {
-            return false;
-          }
-        }
-      }, '');
-
+      var newTarget = findMatchingPath(targetPath, methodFiles);
       if (newTarget) {
-        return returnForPath(newTarget, requestParams);
+        var requestParams = {};
+        newTarget.params.forEach(function (param) {
+          requestParams[param.key] = param.value;
+        });
+        return returnForPath(newTarget.path, requestParams);
       } else {
         return returnNotFound();
       }
