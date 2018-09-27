@@ -73,7 +73,7 @@ function recurseLookup(basePath, lookupPath, existingParams) {
   var paths = [];
   var matchingFolders = findMatchingFolderOnLevel(basePath.join('/'), lookupPath[0], existingParams);
   if(lookupPath.length < 2) { return matchingFolders; }
-  matchingFolders.forEach(folder => {
+  matchingFolders.forEach(function (folder) {
     paths = paths.concat(recurseLookup(folder.path.split('/'), lookupPath.slice(1), folder.params));
   });
   return paths;
@@ -109,7 +109,7 @@ function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
       };
     });
   if (wildcardFolders.length > 0) {
-    wildcardFolders.forEach(wildcardFolder => {
+    wildcardFolders.forEach(function (wildcardFolder) {
       var pathOption = {
         path: parentPath + '/' + wildcardFolder.folder,
         params: existingParams.concat({key: wildcardFolder.param, value: testPath})
@@ -221,7 +221,7 @@ module.exports = function (urlRoot, pathRoot) {
       var newTarget = findMatchingPath(targetPath);
       if (newTarget) {
         var requestParams = {};
-        newTarget.params.forEach(param => {
+        newTarget.params.forEach(function (param) {
           requestParams[param.key] = param.value;
         });
         return returnForPath(newTarget.path, requestParams);
