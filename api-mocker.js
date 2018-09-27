@@ -50,6 +50,76 @@ function logger(params) {
   }
 }
 
+
+/**
+ * Locate all possible options to match a file request, select the first one (most relevant)
+ * @param {string} path Requst path to API mock file.
+ */
+function findMatchingPath(path) {
+  let pathParts = path.split('/');
+  let pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
+  if (pathOptions.length < 1) {
+    return false;
+  }
+  return pathOptions[0];
+}
+/**
+ * Recursively loop through path to find all possible path matches including wildcards
+ * @param {string[]} basePath rootPath to traverse down form
+ * @param {string[]} lookupPath section of path to traverse
+ * @param {object[]} existingParams list of params found on the basepath (key, value)
+ */
+function recurseLookup(basePath, lookupPath, existingParams) {
+  var paths = [];
+  var matchingFolders = findMatchingFolderOnLevel(basePath.join('/'), lookupPath[0], existingParams);
+  if(lookupPath.length < 2) { return matchingFolders; }
+  matchingFolders.forEach(folder => {
+    paths = paths.concat(recurseLookup(folder.path.split('/'), lookupPath.slice(1), folder.params));
+  });
+  return paths;
+}
+/**
+ * Find possible folder matches for current path
+ * @param {string} parentPath path to current level
+ * @param {string} testPath folder to locate on current level
+ * @param {object[]} existingParams list of params found on the parentPath (key, value)
+ */
+function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
+  var pathOptions = [];
+  if (parentPath === false || !fs.existsSync(parentPath)) {
+    return pathOptions;
+  }
+  if (fs.existsSync(parentPath + '/' + testPath)) {
+    pathOptions.push({
+      path: parentPath + '/' + testPath,
+      params: existingParams.concat([])
+    });
+  }
+  var wildcardFolders = fs.readdirSync(parentPath)
+    .filter(function (file) {
+      return fs.lstatSync(path.join(parentPath, file)).isDirectory();
+    })
+    .filter(function (folder_name) {
+      return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
+    })
+    .map(function (wildcardFolder) {
+      return {
+        param: wildcardFolder.slice(2, -2),
+        folder: wildcardFolder
+      };
+    });
+  if (wildcardFolders.length > 0) {
+    wildcardFolders.forEach(wildcardFolder => {
+      var pathOption = {
+        path: parentPath + '/' + wildcardFolder.folder,
+        params: existingParams.concat({key: wildcardFolder.param, value: testPath})
+      };
+      pathOptions.push(pathOption);
+    });
+  }
+  return pathOptions;
+}
+
 /**
  * @param {string|object} urlRoot Base path for API url or full config object
  * @param {string|object} pathRoot Base path of API mock files. eg: ./mock/api or
@@ -148,50 +218,13 @@ module.exports = function (urlRoot, pathRoot) {
     if (fs.existsSync(targetFullPath)) {
       return returnForPath(targetFullPath);
     } else {
-      var requestParams = {};
-
-      var newTarget = targetPath.split('/').reduce(function (currentFolder, nextFolder, index) {
-        if (currentFolder === false) {
-          return '';
-        }
-        // First iteration
-        if (currentFolder === '') {
-          return nextFolder;
-        }
-
-        var pathToCheck = currentFolder + '/' + nextFolder;
-        if (fs.existsSync(pathToCheck)) {
-          return pathToCheck
-        } else {
-          if (!fs.existsSync(currentFolder)) {
-            return false;
-          }
-
-          var folders = fs.readdirSync(currentFolder)
-            .filter(function (file) {
-              return fs.lstatSync(path.join(currentFolder, file)).isDirectory();
-            })
-            .filter(function (folder_name) {
-              return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
-            })
-            .map(function (wildcardFolder) {
-              return {
-                param: wildcardFolder.slice(2, -2),
-                folder: wildcardFolder
-              };
-            });
-
-          if (folders.length > 0) {
-            requestParams[folders[0].param] = nextFolder;
-            return currentFolder + '/' + folders[0].folder;
-          } else {
-            return false;
-          }
-        }
-      }, '');
-
+      var newTarget = findMatchingPath(targetPath);
       if (newTarget) {
-        return returnForPath(newTarget, requestParams);
+        var requestParams = {};
+        newTarget.params.forEach(param => {
+          requestParams[param.key] = param.value;
+        });
+        return returnForPath(newTarget.path, requestParams);
       } else {
         return returnNotFound();
       }
