@@ -36,9 +36,9 @@ function escapeRegExp(str) {
 function defaultLogger(params) {
   console.log(
     chalk.bgYellow.black('api-mocker') + ' ' +
-    chalk.green(params.req.method.toUpperCase()) + ' ' + 
+    chalk.green(params.req.method.toUpperCase()) + ' ' +
     chalk.blue(params.req.originalUrl) + ' => ' +
-    chalk.cyan(params.filePath + '.' + params.fileType)
+    chalk.cyan(params.filePath)
   );
 }
 
@@ -53,15 +53,26 @@ function logger(params) {
 
 /**
  * Locate all possible options to match a file request, select the first one (most relevant)
- * @param {string} path Requst path to API mock file.
+ * @param {string} requestPath Requst path to API mock file.
+ * @param {string[]} requestMethodFiles A list of files that match the request
  */
-function findMatchingPath(path) {
-  var pathParts = path.split('/');
+function findMatchingPath(requestPath, requestMethodFiles) {
+  var pathParts = requestPath.split('/');
   var pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
-  if (pathOptions.length < 1) {
-    return false;
-  }
-  return pathOptions[0];
+
+  var result = false;
+  pathOptions.some(function (pathOption) {
+    return requestMethodFiles.some(function (requestMethodFile) {
+      if (fs.existsSync(path.join(pathOption.path, requestMethodFile))) {
+        result = {
+          path: path.resolve(path.join(pathOption.path, requestMethodFile)),
+          params: pathOption.params
+        };
+        return true;
+      }
+    });
+  });
+  return result;
 }
 /**
  * Recursively loop through path to find all possible path matches including wildcards
@@ -72,7 +83,7 @@ function findMatchingPath(path) {
 function recurseLookup(basePath, lookupPath, existingParams) {
   var paths = [];
   var matchingFolders = findMatchingFolderOnLevel(basePath.join('/'), lookupPath[0], existingParams);
-  if(lookupPath.length < 2) { return matchingFolders; }
+  if (lookupPath.length < 2) { return matchingFolders; }
   matchingFolders.forEach(function (folder) {
     paths = paths.concat(recurseLookup(folder.path.split('/'), lookupPath.slice(1), folder.params));
   });
@@ -89,13 +100,13 @@ function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
   if (parentPath === false || !fs.existsSync(parentPath)) {
     return pathOptions;
   }
-  if (fs.existsSync(parentPath + '/' + testPath)) {
+  if (fs.existsSync(path.join(parentPath, testPath))) {
     pathOptions.push({
-      path: parentPath + '/' + testPath,
+      path: path.join(parentPath, testPath),
       params: existingParams.concat([])
     });
   }
-  var wildcardFolders = fs.readdirSync(parentPath)
+  fs.readdirSync(parentPath)
     .filter(function (file) {
       return fs.lstatSync(path.join(parentPath, file)).isDirectory();
     })
@@ -107,16 +118,13 @@ function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
         param: wildcardFolder.slice(2, -2),
         folder: wildcardFolder
       };
-    });
-  if (wildcardFolders.length > 0) {
-    wildcardFolders.forEach(function (wildcardFolder) {
+    }).forEach(function (wildcardFolder) {
       var pathOption = {
-        path: parentPath + '/' + wildcardFolder.folder,
+        path: path.join(parentPath, wildcardFolder.folder),
         params: existingParams.concat({key: wildcardFolder.param, value: testPath})
       };
       pathOptions.push(pathOption);
     });
-  }
   return pathOptions;
 }
 
@@ -180,13 +188,11 @@ module.exports = function (urlRoot, pathRoot) {
       return res.end('Endpoint not found on mock files: ' + url);
     };
 
-    var returnForPath = function (targetFolder, requestParams) {
-      var filePath = path.resolve(targetFolder, req.method);
-
-      if (fs.existsSync(filePath + '.js')) {
+    var returnForPath = function (filePath, requestParams) {
+      if (filePath.endsWith('.js')) {
         logger({ req: req, filePath: filePath, fileType: 'js', config: config })
-        delete require.cache[require.resolve(filePath + '.js')];
-        var customMiddleware = require(filePath + '.js');
+        delete require.cache[require.resolve(path.resolve(filePath))];
+        var customMiddleware = require(path.resolve(filePath));
         if (requestParams) {
           req.params = requestParams;
         }
@@ -201,24 +207,36 @@ module.exports = function (urlRoot, pathRoot) {
           fileType = req.accepts(['json', 'xml']);
         };
 
-        if (fs.existsSync(filePath + '.' + fileType)) {
-          logger({ req: req, filePath: filePath, fileType: fileType, config: config })
-          var buf = fs.readFileSync(filePath + '.' + fileType);
+        logger({ req: req, filePath: filePath, fileType: fileType, config: config })
+        var buf = fs.readFileSync(filePath);
 
-          res.setHeader('Content-Type', 'application/' + fileType);
+        res.setHeader('Content-Type', 'application/' + fileType);
 
-          return res.end(buf);
-
-        } else {
-          return returnNotFound();
-        }
+        return res.end(buf);
       }
     };
+    var methodFileExtension = config.type || 'json';
+    if (methodFileExtension == 'auto') {
+      methodFileExtension = req.accepts(['json', 'xml']);
+    }
+    var jsMockFile = req.method + '.js';
+    var staticMockFile = req.method + '.' + methodFileExtension;
+    var wildcardJsMockFile = 'ANY.js';
+    var wildcardStaticMockFile = 'ANY.' + methodFileExtension;
 
-    if (fs.existsSync(targetFullPath)) {
-      return returnForPath(targetFullPath);
+    var methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
+
+    var matchedMethodFile = methodFiles.find(function (methodFile) {
+      if (fs.existsSync(path.join(targetFullPath, methodFile))) {
+        return true;
+      }
+      return false;
+    });
+
+    if (matchedMethodFile) {
+      return returnForPath(path.resolve(path.join(targetFullPath, matchedMethodFile)));
     } else {
-      var newTarget = findMatchingPath(targetPath);
+      var newTarget = findMatchingPath(targetPath, methodFiles);
       if (newTarget) {
         var requestParams = {};
         newTarget.params.forEach(function (param) {

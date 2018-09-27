@@ -63,27 +63,6 @@ describe('Simple configuration with baseUrl', function () {
       }, done);
   });
 
-  it('wildcard mock works properly', function (done) {
-    request(app)
-      .get('/api/users/2812391232')
-      .expect('Content-Type', /json/)
-      .expect(200)
-      .expect({
-        id: '2812391232',
-        method: 'GET'
-      }, done);
-  });
-
-  it('wildcard mock works properly with nested resources', function (done) {
-    request(app)
-      .get('/api/users/1/nested')
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect({
-        result: 'WILDCARD_NESTED'
-      }, done);
-  });
-
   it('custom response will not cache', function (done) {
     fs.mkdirSync('./test/mocks/users/2');
     fs.writeFileSync('./test/mocks/users/2/GET.js', fs.readFileSync('./test/mocks/users/__user_id__/GET_example1.js'));
@@ -158,6 +137,59 @@ describe('Wildcard feature', function () {
     request(app)
       .get('/notdefined/products/1')
       .expect(404, done);
+  });
+
+  it('wildcard mock works properly', function (done) {
+    request(app)
+      .get('/api/users/2812391232')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect({
+        id: '2812391232',
+        method: 'GET'
+      }, done);
+  });
+
+  it('wildcard mock works properly with nested resources', function (done) {
+    request(app)
+      .get('/api/users/1/nested')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect({
+        result: 'WILDCARD_NESTED'
+      }, done);
+  });
+
+  it('wildcard json methods should work on any given method', function (done) {
+    request(app)
+      .get('/api/users/1/any-json-request')
+      .expect(200)
+      .expect({
+        method: 'ANY'
+      }, function() {
+        request(app)
+          .post('/api/users/1/any-json-request')
+          .expect(200)
+          .expect({
+            method: 'ANY'
+          }, done());
+      });
+  });
+
+  it('wildcard js methods should work on any given method', function (done) {
+    request(app)
+      .get('/api/users/1/any-js-request')
+      .expect(200)
+      .expect({
+        anyMethod: 'GET'
+      }, function() {
+        request(app)
+          .post('/api/users/1/any-js-request')
+          .expect(200)
+          .expect({
+            anyMethod: 'POST'
+          }, done());
+      });
   });
 });
 
