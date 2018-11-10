@@ -21,7 +21,8 @@ var deleteFolderRecursive = function(path) {
 app.use('/api', apiMocker('test/mocks'));
 app.use('/v2', apiMocker({
     target: 'test/mocks',
-    nextOnNotFound: true
+    nextOnNotFound: true,
+    verbose: true
 }));
 app.use('/v2', function (req, res) {
     res.json({
@@ -35,7 +36,10 @@ app.use(apiMocker('/v4', {
 app.use('/notdefined', apiMocker('notdefined'));
 app.use(apiMocker('/xml', {
   target: 'test/mocks',
-  type: 'xml'
+  type: 'xml',
+  verbose: function (msg) {
+    // sth with message
+  }
 }));
 app.use(apiMocker('/dyn', {
   target: 'test/mocks',
