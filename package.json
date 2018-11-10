@@ -4,7 +4,7 @@
   "description": "A connect middleware to serve a RESTful api by some json, xml or js files",
   "main": "api-mocker.js",
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha",
+    "test": "nyc --reporter=html --reporter=text mocha --exit",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
