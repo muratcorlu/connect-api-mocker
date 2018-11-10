@@ -1,6 +1,6 @@
 var request = require('supertest');
 var express = require('express');
-var apiMocker = require('../api-mocker');
+var apiMocker = require('../index');
 var fs = require('fs');
 var app = express();
 
