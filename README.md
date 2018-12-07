@@ -151,7 +151,7 @@ If you have a Python/Ruby/.NET etc. project and want to use that mocking functio
 
 ## Directory Structure
 
-You need to use service names as directory name and http method as filename. Files must be JSON. Middleware will match url to directory structure and respond with the corresponding http method file.
+You need to use service names as directory name and http method as filename. Middleware will match url to directory structure and respond with the corresponding http method file.
 
 Example REST service: `GET /api/messages`
 
