@@ -1,7 +1,7 @@
 connect-api-mocker
 ==================
 
-[![Build Status](https://travis-ci.org/muratcorlu/connect-api-mocker.svg?branch=master)](https://travis-ci.org/muratcorlu/connect-api-mocker) [![npm version](https://badge.fury.io/js/connect-api-mocker.svg)](https://www.npmjs.com/package/connect-api-mocker) [![codecov](https://codecov.io/gh/muratcorlu/connect-api-mocker/branch/master/graph/badge.svg)](https://codecov.io/gh/muratcorlu/connect-api-mocker) [![Greenkeeper badge](https://badges.greenkeeper.io/muratcorlu/connect-api-mocker.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/muratcorlu/connect-api-mocker.svg?branch=master)](https://travis-ci.org/muratcorlu/connect-api-mocker) [![npm version](https://badge.fury.io/js/connect-api-mocker.svg)](https://www.npmjs.com/package/connect-api-mocker) [![codecov](https://codecov.io/gh/muratcorlu/connect-api-mocker/branch/master/graph/badge.svg)](https://codecov.io/gh/muratcorlu/connect-api-mocker) [![Greenkeeper badge](https://badges.greenkeeper.io/muratcorlu/connect-api-mocker.svg)](https://greenkeeper.io/) [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 `connect-api-mocker` is a [connect.js](https://github.com/senchalabs/connect) middleware that fakes REST API server with filesystem. It will be helpful when you try to test your application without the actual REST API server.
 
