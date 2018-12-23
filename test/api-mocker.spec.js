@@ -254,27 +254,3 @@ describe('Handling request body', function () {
   })
 
 })
-
-describe('Handling request body', function () {
-  it('should work with request body json', function (done) {
-    request(app)
-      .post('/api/users')
-      .set('Content-Type', 'application/json')
-      .send({name: 'A name'})
-      .expect(201)
-      .expect({
-        name: 'A name'
-      }, done)
-  });
-
-  it('shouldnt break to capability of reading raw request body', function (done) {
-    request(app)
-      .patch('/api/users')
-      .send('A text content')
-      .expect(200)
-      .expect({
-        requestString: 'A text content'
-      }, done);
-  })
-
-})
