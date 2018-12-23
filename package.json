@@ -26,12 +26,15 @@
   "homepage": "https://github.com/muratcorlu/connect-api-mocker#readme",
   "devDependencies": {
     "codecov": "^3.1.0",
+    "eslint": "^5.10.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
     "express": "^4.16.4",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
+    "semantic-release": "^15.12.4",
     "supertest": "^3.3.0",
-    "travis-deploy-once": "^5.0.9",
-    "semantic-release": "^15.12.4"
+    "travis-deploy-once": "^5.0.9"
   },
   "dependencies": {
     "body-parser": "^1.18.3",

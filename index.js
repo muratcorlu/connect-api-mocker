@@ -90,7 +90,7 @@ function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
       return fs.lstatSync(path.join(parentPath, file)).isDirectory();
     })
     .filter(function (folder_name) {
-      return folder_name.slice(0, 2) == '__' && folder_name.slice(-2) == '__';
+      return folder_name.slice(0, 2) === '__' && folder_name.slice(-2) === '__';
     })
     .map(function (wildcardFolder) {
       return {
@@ -119,13 +119,13 @@ module.exports = function (urlRoot, pathRoot) {
     };
     var baseUrl;
 
-    if (typeof urlRoot == 'string') {
+    if (typeof urlRoot === 'string') {
       if (!pathRoot) {
         config.target = urlRoot;
         baseUrl = req.baseUrl;
       } else {
         baseUrl = urlRoot;
-        if (typeof pathRoot == 'object') {
+        if (typeof pathRoot === 'object') {
           config = pathRoot;
         } else {
           config.target = pathRoot;
@@ -133,7 +133,7 @@ module.exports = function (urlRoot, pathRoot) {
       }
     }
 
-    if (typeof urlRoot == 'object') {
+    if (typeof urlRoot === 'object') {
       config = urlRoot;
       baseUrl = req.baseUrl;
     }
@@ -143,88 +143,85 @@ module.exports = function (urlRoot, pathRoot) {
 
     // if requested url is in our interest
     if (!req.baseUrl && req.url.indexOf('/' + baseUrl) !== 0) {
-      return next();
-    }
-
-    // Ignore querystrings
-    var url = nodeUrl.parse(req.url).pathname;
-
-    // remove baseUrl
-    url = url.replace(new RegExp('^(\/)?' + escapeRegExp(baseUrl)), '');
-
-    // trim trailing and leading slashes from url again
-    url = trimSlashes(url);
-
-    var targetPath = trimSlashes(config.target) + '/' + url;
-    var targetFullPath = path.resolve(targetPath);
-
-    var returnNotFound =  function () {
-      if (config.nextOnNotFound) {
-        return next();
-      }
-
-      res.writeHead(404, {'Content-Type': 'text/html'});
-      return res.end('Endpoint not found on mock files: ' + url);
-    };
-
-    var returnForPath = function (filePath, requestParams) {
-      if (filePath.endsWith('.js')) {
-        logger({ req: req, filePath: filePath, fileType: 'js', config: config })
-        delete require.cache[require.resolve(path.resolve(filePath))];
-        var customMiddleware = require(path.resolve(filePath));
-        if (requestParams) {
-          req.params = requestParams;
-        }
-        bodyParser.json()(req, res, function () {
-          customMiddleware(req, res, next);
-        });
-        return
-      } else {
-        var fileType = config.type || 'json';
-
-        if (fileType == 'auto') {
-          fileType = req.accepts(['json', 'xml']);
-        };
-
-        logger({ req: req, filePath: filePath, fileType: fileType, config: config })
-        var buf = fs.readFileSync(filePath);
-
-        res.setHeader('Content-Type', 'application/' + fileType);
-
-        return res.end(buf);
-      }
-    };
-    var methodFileExtension = config.type || 'json';
-    if (methodFileExtension == 'auto') {
-      methodFileExtension = req.accepts(['json', 'xml']);
-    }
-    var jsMockFile = req.method + '.js';
-    var staticMockFile = req.method + '.' + methodFileExtension;
-    var wildcardJsMockFile = 'ANY.js';
-    var wildcardStaticMockFile = 'ANY.' + methodFileExtension;
-
-    var methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
-
-    var matchedMethodFile = methodFiles.find(function (methodFile) {
-      if (fs.existsSync(path.join(targetFullPath, methodFile))) {
-        return true;
-      }
-      return false;
-    });
-
-    if (matchedMethodFile) {
-      return returnForPath(path.resolve(path.join(targetFullPath, matchedMethodFile)));
+      next();
     } else {
-      var newTarget = findMatchingPath(targetPath, methodFiles);
-      if (newTarget) {
-        var requestParams = {};
-        newTarget.params.forEach(function (param) {
-          requestParams[param.key] = param.value;
-        });
-        return returnForPath(newTarget.path, requestParams);
-      } else {
-        return returnNotFound();
+
+      // Ignore querystrings
+      var url = nodeUrl.parse(req.url).pathname;
+
+      // remove baseUrl
+      url = url.replace(new RegExp('^(\/)?' + escapeRegExp(baseUrl)), '');
+
+      // trim trailing and leading slashes from url again
+      url = trimSlashes(url);
+
+      var targetPath = trimSlashes(config.target) + '/' + url;
+      var targetFullPath = path.resolve(targetPath);
+
+      var returnNotFound =  function () {
+        if (config.nextOnNotFound) {
+          return next();
+        }
+
+        res.writeHead(404, {'Content-Type': 'text/html'});
+        return res.end('Endpoint not found on mock files: ' + url);
+      };
+
+      var returnForPath = function (filePath, requestParams) {
+        if (filePath.endsWith('.js')) {
+          logger({ req: req, filePath: filePath, fileType: 'js', config: config })
+          delete require.cache[require.resolve(path.resolve(filePath))];
+          var customMiddleware = require(path.resolve(filePath));
+          if (requestParams) {
+            req.params = requestParams;
+          }
+          bodyParser.json()(req, res, function () {
+            customMiddleware(req, res, next);
+          });
+        } else {
+          var fileType = config.type || 'json';
+
+          if (fileType === 'auto') {
+            fileType = req.accepts(['json', 'xml']);
+          }
+
+          logger({ req: req, filePath: filePath, fileType: fileType, config: config })
+          var buf = fs.readFileSync(filePath);
+
+          res.setHeader('Content-Type', 'application/' + fileType);
+
+          return res.end(buf);
+        }
+      };
+      var methodFileExtension = config.type || 'json';
+      if (methodFileExtension === 'auto') {
+        methodFileExtension = req.accepts(['json', 'xml']);
       }
-    };
+      var jsMockFile = req.method + '.js';
+      var staticMockFile = req.method + '.' + methodFileExtension;
+      var wildcardJsMockFile = 'ANY.js';
+      var wildcardStaticMockFile = 'ANY.' + methodFileExtension;
+
+      var methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
+
+      var matchedMethodFile = methodFiles.find(function (methodFile) {
+        return fs.existsSync(path.join(targetFullPath, methodFile));
+      });
+
+      if (matchedMethodFile) {
+        return returnForPath(path.resolve(path.join(targetFullPath, matchedMethodFile)));
+      } else {
+        var newTarget = findMatchingPath(targetPath, methodFiles);
+        if (newTarget) {
+          var requestParams = {};
+          newTarget.params.forEach(function (param) {
+            requestParams[param.key] = param.value;
+          });
+          return returnForPath(newTarget.path, requestParams);
+        } else {
+          return returnNotFound();
+        }
+      }
+    }
   };
 };
