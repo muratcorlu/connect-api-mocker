@@ -1,5 +1,9 @@
 module.exports = {
     "extends": "airbnb-base",
+    "env": {
+      node: true,
+      mocha: true
+    },
     "rules": {
         "max-len": "off",
         "func-names": "off",

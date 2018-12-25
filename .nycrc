@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    "examples/**/*.js",
+    "examples/**/*.json",
+    "examples/**/*.xml",
+    "test/mocks/**/*.js",
+    "test/mocks/**/*.json",
+    "test/mocks/**/*.xml",
+
+    "test/**/*.spec.js"
+  ]
+}

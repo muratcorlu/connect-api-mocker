@@ -4,7 +4,7 @@
   "description": "A connect middleware to serve a RESTful api by some json, xml or js files",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --reporter=html --reporter=text mocha --exit",
+    "test": "nyc --reporter=html --reporter=text mocha --ui bdd ./test --exit",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "travis-deploy-once": "travis-deploy-once",
     "semantic-release": "semantic-release"
