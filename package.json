@@ -27,7 +27,7 @@
   "devDependencies": {
     "codecov": "^3.1.0",
     "express": "^4.16.4",
-    "mocha": "^5.2.0",
+    "mocha": "^6.0.0",
     "nyc": "^13.1.0",
     "supertest": "^3.3.0",
     "travis-deploy-once": "^5.0.9",
