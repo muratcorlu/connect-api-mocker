@@ -29,7 +29,7 @@
     "express": "^4.16.4",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
-    "supertest": "^3.3.0",
+    "supertest": "^4.0.0",
     "travis-deploy-once": "^5.0.9",
     "semantic-release": "^15.12.4"
   },
