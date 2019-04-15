@@ -169,12 +169,20 @@ module.exports = function (urlRoot, pathRoot) {
           req, filePath, fileType: 'js', config
         });
         delete require.cache[require.resolve(path.resolve(filePath))];
-        const customMiddleware = require(path.resolve(filePath));
+        let customMiddleware = require(path.resolve(filePath));
         if (requestParams) {
           req.params = requestParams;
         }
         bodyParser.json()(req, res, () => {
-          customMiddleware(req, res, next);
+          if (typeof customMiddleware === 'function') {
+            customMiddleware = [customMiddleware];
+          }
+          // flatten middlewares
+          customMiddleware = [].concat(...customMiddleware);
+
+          customMiddleware.reduce((chain, middleware) => chain.then(
+            () => new Promise(resolve => middleware(req, res, resolve))
+          ), Promise.resolve()).then(next);
         });
       } else {
         let fileType = config.type || 'json';
