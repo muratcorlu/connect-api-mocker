@@ -7,7 +7,7 @@ const app = express();
 app.use('/api', apiMocker('test/mocks/helpers'));
 
 describe('Helpers', () => {
-  it('delay, creted(status), json response', (done) => {
+  it('delay, created(status), json response', (done) => {
     request(app)
       .post('/api/users')
       .expect('Content-Type', /json/)
