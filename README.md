@@ -226,23 +226,23 @@ module.exports = function (request, response) {
 `POST.js` file for non ExpressJS server:
 
 ```js
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-module.exports = function (request, response) {
+module.exports = (request, response) => {
   if (!request.get('X-Auth-Key')) {
     response.statusCode = 403;
     response.end();
   } else {
-    var filePath = path.join(__dirname, 'POST.json');
-    var stat = fs.statSync(filePath);
+    const filePath = path.join(__dirname, 'POST.json');
+    const stat = fs.statSync(filePath);
 
     response.writeHead(200, {
         'Content-Type': 'application/json',
         'Content-Length': stat.size
     });
 
-    var readStream = fs.createReadStream(filePath);
+    const readStream = fs.createReadStream(filePath);
     // We replaced all the event handlers with a simple call to readStream.pipe()
     readStream.pipe(response);
   }
@@ -260,7 +260,7 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function (request, response) {
-  var targetFileName = 'GET.json';
+  let targetFileName = 'GET.json';
 
   // Check is a type parameter exist
   if (request.query.type) {
@@ -281,13 +281,13 @@ module.exports = function (request, response) {
 ```
 `GET.js` file for non ExpressJS server:
 ```js
-var url =  require('url');
-var fs = require('fs');
-var path = require('path');
+const url =  require('url');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = function (request, response) {
-  var targetFileName = 'GET.json';
-  var typeQueryParam = url.parse(request.url, true).query.type;
+  let targetFileName = 'GET.json';
+  const typeQueryParam = url.parse(request.url, true).query.type;
   // Check is a type parameter exist
   if (typeQueryParam) {
     // Generate a new targetfilename with that type parameter
@@ -306,16 +306,44 @@ module.exports = function (request, response) {
     return;
   }
 
-  var stat = fs.statSync(filePath);
+  const stat = fs.statSync(filePath);
   response.writeHead(200, {
       'Content-Type': 'application/json',
       'Content-Length': stat.size
   });
 
-  var readStream = fs.createReadStream(filePath);
+  const readStream = fs.createReadStream(filePath);
   // We replaced all the event handlers with a simple call to readStream.pipe()
   readStream.pipe(response);
 }
+```
+
+## Helper functions for custom responses
+
+Connect-Api-Mocker also presents a bunch of helper functions to speed up writing simple custom responses. There are:
+
+- `status(statusCode)`: Set status code of response
+- `notFound(message?)`: Set status code as 404 and optionally sends message
+- `created()`: Sets status code as 201
+- `success()`: Sets status code as 200
+- `delay(duration)`: Delays the request by given duration(in ms).
+- `json(data)`: Send given JSON object as response.
+- `end(body)`: Ends request and optionally sends the string output
+
+You can use these functions in custom responses, like:
+
+```js
+const { notFound } = require('connect-api-mocker/helpers');
+
+module.exports = notFound('Page is not found');
+```
+
+Also you can combine multiple functions:
+
+```js
+const { delay, created, json } = require('connect-api-mocker/helpers');
+
+module.exports = [delay(500), created(), json({success: true})];
 ```
 
 ## Wildcards in requests
