@@ -1,3 +1,9 @@
+## 1.6.0 (2019-08-08)
+
+### Features:
+
+- BodyParser settings are now configurable
+
 ## 1.4.0 (2018-09-27)
 
 ### Features:
