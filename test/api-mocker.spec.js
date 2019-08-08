@@ -46,6 +46,13 @@ app.use(apiMocker('/dyn', {
   target: 'test/mocks',
   type: 'auto'
 }));
+app.use(apiMocker('/text', {
+  target: 'test/mocks',
+  bodyParser: {
+    type: 'text',
+    options: { type: 'application/vnd.custom-type' }
+  }
+}));
 
 describe('Simple configuration with baseUrl', () => {
   it('responds for simple GET request', (done) => {
@@ -241,6 +248,15 @@ describe('Handling request body', () => {
       .expect({
         name: 'A name'
       }, done);
+  });
+
+  it('should work with request body raw', (done) => {
+    request(app)
+      .post('/text/bodyParser')
+      .set('Content-Type', 'application/vnd.custom-type')
+      .send('plain text')
+      .expect(201)
+      .expect('plain text', done);
   });
 
   it('shouldnt break to capability of reading raw request body', (done) => {

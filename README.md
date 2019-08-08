@@ -422,6 +422,28 @@ apiMocker('/api', {
 
 With that option, you can mock only specific urls simply.
 
+## Body parser
+
+By default request body is parsed with help of [body-parser](https://github.com/expressjs/body-parser).
+Default configuration uses JSON parser, however you can modify it with help of `bodyParser` object.
+`bodyParser` object supports configuration of
+
+ - parser type via `type` setting. 
+ - parser options via `options` setting.
+
+Supported parsers and corresponding options can be found [here](https://github.com/expressjs/body-parser#bodyparserjsonoptions)
+
+Example belows configures usage of `text` parser for requests with `content-type=application/vnd.custom-type`
+```js
+apiMocker('/text', {
+  target: 'test/mocks',
+  bodyParser: {
+    type: 'text',
+    options: { type: 'application/vnd.custom-type' }
+  }
+})
+```
+
 ## Logging
 
 If you want to see which requests are being mocked, set the `verbose` option either to `true` or provide your own function.
