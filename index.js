@@ -173,7 +173,13 @@ module.exports = function (urlRoot, pathRoot) {
         if (requestParams) {
           req.params = requestParams;
         }
-        bodyParser.json()(req, res, () => {
+        let bodyParserType = 'json';
+        let bodyParserOptions = {};
+        if(typeof config.bodyParser != "undefined"){
+          bodyParserType = config.bodyParser.type || 'json';
+          bodyParserOptions = config.bodyParser.options || {};
+        }
+        bodyParser[bodyParserType](bodyParserOptions)(req, res, () => {
           if (typeof customMiddleware === 'function') {
             customMiddleware = [customMiddleware];
           }
