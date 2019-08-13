@@ -53,6 +53,11 @@ app.use(apiMocker('/text', {
     options: { type: 'application/vnd.custom-type' }
   }
 }));
+app.use('/disable-body-parser', apiMocker({
+  target: 'test/mocks/bodyParser/disabled',
+  bodyParser: false
+}));
+
 
 describe('Simple configuration with baseUrl', () => {
   it('responds for simple GET request', (done) => {
@@ -248,6 +253,14 @@ describe('Handling request body', () => {
       .expect({
         name: 'A name'
       }, done);
+  });
+
+  it('should work with disabled request body', (done) => {
+    request(app)
+      .post('/disable-body-parser')
+      .send({ todo: 'buy milk' })
+      .expect(201)
+      .expect('buy milk', done);
   });
 
   it('should work with request body raw', (done) => {
