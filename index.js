@@ -173,13 +173,8 @@ module.exports = function (urlRoot, pathRoot) {
         if (requestParams) {
           req.params = requestParams;
         }
-        let bodyParserType = 'json';
-        let bodyParserOptions = {};
-        if(typeof config.bodyParser != "undefined"){
-          bodyParserType = config.bodyParser.type || 'json';
-          bodyParserOptions = config.bodyParser.options || {};
-        }
-        bodyParser[bodyParserType](bodyParserOptions)(req, res, () => {
+
+        const executeMiddleware = (request, response) => {
           if (typeof customMiddleware === 'function') {
             customMiddleware = [customMiddleware];
           }
@@ -187,9 +182,18 @@ module.exports = function (urlRoot, pathRoot) {
           customMiddleware = [].concat(...customMiddleware);
 
           customMiddleware.reduce((chain, middleware) => chain.then(
-            () => new Promise(resolve => middleware(req, res, resolve))
+            () => new Promise(resolve => middleware(request, response, resolve))
           ), Promise.resolve()).then(next);
-        });
+        };
+
+        if (config.bodyParser === false) {
+          executeMiddleware(req, res);
+        } else {
+          const bodyParserType = (config.bodyParser && config.bodyParser.type) || 'json';
+          const bodyParserOptions = (config.bodyParser && config.bodyParser.options) || {};
+
+          bodyParser[bodyParserType](bodyParserOptions)(req, res, () => executeMiddleware(req, res));
+        }
       } else {
         let fileType = config.type || 'json';
 
