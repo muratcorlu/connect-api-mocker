@@ -423,10 +423,9 @@ apiMocker('/api', {
 With that option, you can mock only specific urls simply.
 
 ## Body parser
-By default request body is pre-processed with [body-parser](https://github.com/expressjs/body-parser). 
-Default body-parser configuration uses JSON parser. Example belows configures usage of `json` (default) parser
 
-In order to disable dfault pre-processing set `bodyParser` option to `false`.
+By default request body is pre-processed with [body-parser](https://github.com/expressjs/body-parser). Default body-parser configuration uses JSON parser. Example belows configures usage of `json` (default) parser. In order to disable default pre-processing set `bodyParser` option to `false`.
+
 ```js
 apiMocker('/text', {
   target: 'test/mocks',
