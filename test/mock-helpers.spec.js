@@ -28,4 +28,11 @@ describe('Helpers', () => {
       .patch('/api/users')
       .expect(200, done);
   });
+
+  it('type, file', (done) => {
+    request(app)
+      .get('/api/users/avatar')
+      .expect('Content-Type', 'image/png')
+      .expect(200, done);
+  });
 });
