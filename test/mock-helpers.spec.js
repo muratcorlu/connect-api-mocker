@@ -33,6 +33,7 @@ describe('Helpers', () => {
     request(app)
       .get('/api/users/avatar')
       .expect('Content-Type', 'image/png')
+      .expect('Content-Length', '0')
       .expect(200, done);
   });
 });
