@@ -138,6 +138,8 @@ To use api mocker on your [Webpack][] projects, simply add a setup options to yo
 > [devServer.setup](https://doc.webpack-china.org/configuration/dev-server/#devserver-setup) , This option is deprecated in favor of before and will be removed in v3.0.0.
 
 ```js
+  var apiMocker = require(‘connect-api-mocker’);
+  
   ...
   before: function(app) {
     app.use(apiMocker('/api', 'mocks/api'));
