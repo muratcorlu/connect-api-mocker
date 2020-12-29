@@ -11,6 +11,8 @@ Detailed article: [https://medium.com/@muratcorlu/mocking-rest-endpoints-in-web-
 
 A presentation at AmsterdamJS'18 conference: [https://www.youtube.com/watch?v=yF_8O4l-Ybc](https://www.youtube.com/watch?v=yF_8O4l-Ybc)
 
+Türkçe sunum için: https://www.youtube.com/watch?v=cVL8sesauCU
+
 ## Installation
 
 ```
