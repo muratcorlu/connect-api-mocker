@@ -146,7 +146,45 @@ To use api mocker on your [Webpack][] projects, simply add a setup options to yo
   },
   ...
 ```
+### Using with CRA
 
+To use api mocker on your [cra][] projects, please install [customize-cra] and [react-app-rewired] using npm to modify webpack config file:
+```
+npm install customize-cra react-app-rewired --save-dev
+```
+Then, create a file named config-overrides.js, override webpack config using below codes:
+
+```js
+  const apiMocker = require("connect-api-mocker"),
+    { overrideDevServer } = require("customize-cra");
+
+  const devServerConfig = () => config => {
+    return {
+        ...config,
+        before: (app,server)=> {
+            //call cra before function to not break code
+            config.before(app, server);
+            //Then add our mocker url and folder 
+            app.use(apiMocker('/api', 'mocks/api'));
+        } 
+    }
+  }
+
+  module.exports = {
+    devServer: overrideDevServer(
+      devServerConfig()
+    )
+  };
+```
+Finally, change our run method to from "react-scripts start" to "react-app-rewired start" in package.json file:
+```js
+...
+"scripts": {
+    "start": "react-app-rewired start",
+    ...
+  }
+  ...
+```
 ### Using with other languages other than JavaScript
 
 If you have a Python/Ruby/.NET etc. project and want to use that mocking functionality, you can use [cli-api-mocker](https://github.com/muratcorlu/cli-api-mocker) as a wrapper of connect-api-mocker for command line. With the help of cli-api-mocker, if you run `mockit` command, you will have a seperate web server that will handle your mocks as a REST API. Please look for [cli-api-mocker readme](https://github.com/muratcorlu/cli-api-mocker) for details.
@@ -487,3 +525,6 @@ apiMocker('/api', {
 [lite-server]: https://github.com/johnpapa/lite-server
 [webpack]: https://github.com/webpack/webpack
 [webpack-dev-server]: https://github.com/webpack/webpack-dev-server
+[cra]: https://github.com/facebook/create-react-app
+[customize-cra]: https://github.com/arackaf/customize-cra
+[react-app-rewired]: https://github.com/timarney/react-app-rewired
