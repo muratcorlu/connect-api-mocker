@@ -390,11 +390,12 @@ module.exports = [delay(500), created(), json({success: true})];
 
 `json` middleware also accepts a callback that has request and response objects as parameters:
 
-``js
+```js
 const { json } = require('connect-api-mocker/helpers');
 
 module.exports = [json(req => ({
-  id: req.params.userId, success: true
+  id: req.params.userId,
+  success: true
 }))];
 ```
 
