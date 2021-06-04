@@ -367,7 +367,7 @@ Connect-Api-Mocker also presents a bunch of helper functions to speed up writing
 - `created()`: Sets status code as 201
 - `success()`: Sets status code as 200
 - `delay(duration)`: Delays the request by given duration(in ms).
-- `json(data)`: Send given JSON object as response.
+- `json(data|callback(req,res))`: Send given JSON object as response.
 - `file(filePath)`: Responds with the content of file in given path(full path)
 - `type(contentType)`: Sets content-type header.
 - `end(body)`: Ends request and optionally sends the string output
@@ -386,6 +386,16 @@ Also you can combine multiple functions:
 const { delay, created, json } = require('connect-api-mocker/helpers');
 
 module.exports = [delay(500), created(), json({success: true})];
+```
+
+`json` middleware also accepts a callback that has request and response objects as parameters:
+
+``js
+const { json } = require('connect-api-mocker/helpers');
+
+module.exports = [json(req => ({
+  id: req.params.userId, success: true
+}))];
 ```
 
 Another example to return image as response:

@@ -17,6 +17,16 @@ describe('Helpers', () => {
       }, done);
   });
 
+  it('json helper with callback', (done) => {
+    request(app)
+      .put('/api/users/1')
+      .expect('Content-Type', /json/)
+      .expect({
+        success: true,
+        id: '1'
+      }, done);
+  });
+
   it('notFound', (done) => {
     request(app)
       .get('/api/users')
