@@ -1,5 +1,5 @@
 module.exports = function (req, res) {
-    res.status(201).json({
-        name: req.body.name
-    });
-}
+  res.status(201).json({
+    name: req.body.name
+  });
+};
