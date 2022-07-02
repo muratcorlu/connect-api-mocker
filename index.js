@@ -47,9 +47,9 @@ function findMatchingFolderOnLevel(parentPath, testPath, existingParams) {
     });
   }
   fs.readdirSync(parentPath)
-    .filter(file => fs.lstatSync(path.join(parentPath, file)).isDirectory())
-    .filter(folder_name => folder_name.slice(0, 2) === '__' && folder_name.slice(-2) === '__')
-    .map(wildcardFolder => ({
+    .filter((file) => fs.lstatSync(path.join(parentPath, file)).isDirectory())
+    .filter((folder_name) => folder_name.slice(0, 2) === '__' && folder_name.slice(-2) === '__')
+    .map((wildcardFolder) => ({
       param: wildcardFolder.slice(2, -2),
       folder: wildcardFolder
     }))
@@ -89,7 +89,7 @@ function findMatchingPath(requestPath, requestMethodFiles) {
   const pathOptions = recurseLookup([pathParts.shift()], pathParts, []);
 
   let result = false;
-  pathOptions.some(pathOption => requestMethodFiles.some((requestMethodFile) => {
+  pathOptions.some((pathOption) => requestMethodFiles.some((requestMethodFile) => {
     if (fs.existsSync(path.join(pathOption.path, requestMethodFile))) {
       result = {
         path: path.resolve(path.join(pathOption.path, requestMethodFile)),
@@ -182,7 +182,9 @@ module.exports = function (urlRoot, pathRoot) {
           customMiddleware = [].concat(...customMiddleware);
 
           customMiddleware.reduce((chain, middleware) => chain.then(
-            () => new Promise(resolve => middleware(request, response, resolve))
+            () => new Promise((resolve) => {
+              middleware(request, response, resolve);
+            })
           ), Promise.resolve()).then(next);
         };
 
@@ -222,7 +224,7 @@ module.exports = function (urlRoot, pathRoot) {
 
     const methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
 
-    const matchedMethodFile = methodFiles.find(methodFile => fs.existsSync(path.join(targetFullPath, methodFile)));
+    const matchedMethodFile = methodFiles.find((methodFile) => fs.existsSync(path.join(targetFullPath, methodFile)));
 
     if (matchedMethodFile) {
       return returnForPath(path.resolve(path.join(targetFullPath, matchedMethodFile)));

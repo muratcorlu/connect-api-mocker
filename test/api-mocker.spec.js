@@ -58,7 +58,6 @@ app.use('/disable-body-parser', apiMocker({
   bodyParser: false
 }));
 
-
 describe('Simple configuration with baseUrl', () => {
   it('responds for simple GET request', (done) => {
     request(app)
@@ -209,7 +208,6 @@ describe('Wildcard feature', () => {
       });
   });
 });
-
 
 describe('Response type config', () => {
   it('works properly with xml responses', (done) => {
