@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha --ui bdd ./test --exit",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "travis-deploy-once": "travis-deploy-once",
+    "lint": "eslint .",
     "semantic-release": "semantic-release"
   },
   "repository": {
@@ -25,7 +24,6 @@
   },
   "homepage": "https://github.com/muratcorlu/connect-api-mocker#readme",
   "devDependencies": {
-    "codecov": "^3.1.0",
     "eslint": "^5.10.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
@@ -33,8 +31,7 @@
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
     "semantic-release": "^15.12.4",
-    "supertest": "^3.3.0",
-    "travis-deploy-once": "^5.0.9"
+    "supertest": "^3.3.0"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
