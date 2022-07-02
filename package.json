@@ -30,7 +30,7 @@
     "express": "^4.16.4",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
-    "semantic-release": "^15.12.4",
+    "semantic-release": "^19.0.3",
     "supertest": "^3.3.0"
   },
   "dependencies": {
