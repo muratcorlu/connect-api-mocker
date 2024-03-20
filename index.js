@@ -12,6 +12,10 @@ function escapeRegExp(str) {
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 }
 
+function isJsFile(str) {
+  return !!str.match(/\.c?js$/);
+}
+
 function defaultLogger(params) {
   console.log(
     `${chalk.bgYellow.black('api-mocker')} ${
@@ -164,7 +168,7 @@ module.exports = function (urlRoot, pathRoot) {
     };
 
     const returnForPath = function (filePath, requestParams) {
-      if (filePath.endsWith('.js')) {
+      if (isJsFile(filePath)) {
         logger({
           req, filePath, fileType: 'js', config
         });
@@ -217,12 +221,11 @@ module.exports = function (urlRoot, pathRoot) {
     if (methodFileExtension === 'auto') {
       methodFileExtension = req.accepts(['json', 'xml']);
     }
-    const jsMockFile = `${req.method}.js`;
-    const staticMockFile = `${req.method}.${methodFileExtension}`;
-    const wildcardJsMockFile = 'ANY.js';
-    const wildcardStaticMockFile = `ANY.${methodFileExtension}`;
 
-    const methodFiles = [jsMockFile, staticMockFile, wildcardJsMockFile, wildcardStaticMockFile];
+    const fileExtensions = [methodFileExtension, 'cjs', 'js'];
+    const jsMockFiles = fileExtensions.map((ext) => `${req.method}.${ext}`);
+    const wildcardJsMockFiles = fileExtensions.map((ext) => `ANY.${ext}`);
+    const methodFiles = [...jsMockFiles, ...wildcardJsMockFiles];
 
     const matchedMethodFile = methodFiles.find((methodFile) => fs.existsSync(path.join(targetFullPath, methodFile)));
 
