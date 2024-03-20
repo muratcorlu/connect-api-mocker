@@ -102,6 +102,19 @@ describe('Simple configuration with baseUrl', () => {
   });
 });
 
+describe('cjs extensions for custom middlewares', () => {
+  it('responds by simple cjs middleware', (done) => {
+    request(app)
+
+      .get('/api/users/3')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect({
+        result: 'cjs works'
+      }, done);
+  });
+});
+
 describe('nextOnNotFound setting', () => {
   it('returns correct response when mock is exits', (done) => {
     request(app)

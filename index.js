@@ -13,7 +13,7 @@ function escapeRegExp(str) {
 }
 
 function isJsFile(str) {
-  return !!str.match(/\.(c|m)?js$/)
+  return !!str.match(/\.c?js$/);
 }
 
 function defaultLogger(params) {
@@ -222,9 +222,9 @@ module.exports = function (urlRoot, pathRoot) {
       methodFileExtension = req.accepts(['json', 'xml']);
     }
 
-    const fileExtensions = [methodFileExtension, 'mjs', 'cjs', 'js']
-    const jsMockFiles = fileExtensions.map(ext => `${req.method}.${ext}`)
-    const wildcardJsMockFiles = fileExtensions.map(ext => `ANY.${ext}`)
+    const fileExtensions = [methodFileExtension, 'cjs', 'js'];
+    const jsMockFiles = fileExtensions.map((ext) => `${req.method}.${ext}`);
+    const wildcardJsMockFiles = fileExtensions.map((ext) => `ANY.${ext}`);
     const methodFiles = [...jsMockFiles, ...wildcardJsMockFiles];
 
     const matchedMethodFile = methodFiles.find((methodFile) => fs.existsSync(path.join(targetFullPath, methodFile)));
